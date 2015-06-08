@@ -22,8 +22,8 @@ class Bacteria{
 		float	vel = 0.05f;
 		Bacteria(){
 			//initial bacteria position
-			position.x = rand() % (posXRange * 2) - posXRange;
-			position.y = rand() % (posYRange * 2) - (posYRange * 2);
+			position.x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) - 0.5f;
+			position.y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) - 0.5f;
 			position.z = -3.0f;
 		}
 
@@ -120,7 +120,7 @@ void CinderWithKinect01App::setup()
 	mCallbackColorId = mKinect->addColorCallback(&CinderWithKinect01App::onColorData, this);
 
 	// Set up camera
-	mCamera.lookAt(Vec3f(0.0f, 0.0f, 2.0f), Vec3f::zero());
+	mCamera.lookAt(Vec3f(0.0f, 0.5f, 6.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
 }
 
@@ -369,6 +369,7 @@ void CinderWithKinect01App::updateBacteria(){
 void CinderWithKinect01App::drawBacteria(){
 	// Set up 3D view
 	gl::setMatrices(mCamera);
+	gl::translate(0.0f, 2.0f, 0.0f);
 
 	// Move skeletons down below the rest of the interface
 	gl::pushMatrices();
