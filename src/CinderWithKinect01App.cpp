@@ -4,7 +4,6 @@
 #include "cinder/gl/Texture.h"
 #include "cinder/app/AppNative.h"
 #include "Kinect.h"
-
 using namespace ci;
 using namespace ci::app;
 using namespace std;
