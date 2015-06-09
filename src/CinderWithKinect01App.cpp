@@ -34,7 +34,9 @@ class Player{
 	public:
 		int			gestureId;
 		Skeleton	playerSkel;
-		Vec3f		playerPos;
+		Vec3f		Pos;
+		Vec3f		Vel;
+		float		Acc;
 		Vec3f		handLeftPos, handRightPos, elbowLeftPos, elbowRightPos,centerPos;
 		float		angle;
 };
@@ -86,14 +88,18 @@ class CinderWithKinect01App : public AppBasic
 	//Player
 	Player								player;
 
+	//Window
+	float								width = 0.6;
+	float								height = 1.0;
+
 };
 
 // Kinect image size
-const Vec2i	kKinectSize( 640, 480 );
+const Vec2i	kKinectSize( 454, 750 );
 
 void CinderWithKinect01App::prepareSettings( Settings *settings )
 {
-	settings->setWindowSize(640,480);
+	settings->setWindowSize(454,750);
 	settings->setFrameRate(60.0f);
 }
 
@@ -138,7 +144,7 @@ void CinderWithKinect01App::setup()
 	mCamera.lookAt(Vec3f(0.0f, 0.0f, 2.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
 
-	player.playerPos = Vec3f(0, 0, -1.0f);
+	player.Pos = Vec3f(0, 0, -1.0f);
 }
 
 void CinderWithKinect01App::update()
@@ -474,23 +480,18 @@ void CinderWithKinect01App::getGesture(){
 
 		if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
 			player.gestureId = 1;
-			console() << "FLY LEFT" << endl;
 		}
 		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
 			player.gestureId = 2;
-			console() << "FLY RIGHT" << endl;
 		}
 		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
 			player.gestureId = 3;
-			console() << "FLY UP" << endl;
 		}
 		else if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
 			player.gestureId = 4;
-			console() << "FLY DOWN" << endl;
 		}
 		else{
 			player.gestureId = 0;
-			console() << " STILL " << endl;
 		}
 	}
 }
@@ -501,14 +502,51 @@ void CinderWithKinect01App::updatePlayer(){
 	float distanceLeftY = abs(player.handLeftPos.y - player.centerPos.y);
 	float distanceRightX = abs(player.handRightPos.x - player.centerPos.x);
 	float distanceRightY = abs(player.handRightPos.y - player.centerPos.y);
-	player.angle = atanf(distanceLeftY / distanceLeftY) + atanf(distanceRightY / distanceRightY);
-	player.angle = player.angle/50.0f;
+
+	player.angle = atanf(distanceLeftY / distanceLeftX) + atanf(distanceRightY / distanceRightX);
+
+
+	if (player.angle < 0.3f) player.Acc = 0.001f;
+	else if (0.3f < player.angle && player.angle < 0.7f) player.Acc = 0.002f;
+	else if (0.7f < player.angle && player.angle < 1.1f) player.Acc = 0.003f;
+	else if (1.1f < player.angle && player.angle < 1.5f) player.Acc = 0.004f;
+	else if (1.5f < player.angle && player.angle < 1.9f) player.Acc = 0.005f;
+	else if (1.9f < player.angle) player.Acc = 0.006f;
+
+	if (player.Acc > 0.05f) player.Acc = 0.05f;
+	if (player.Acc < -0.05f) player.Acc = -0.05f;
+
+
+	/// UPDATE VELOCITY ///
 	switch (player.gestureId) {
-		case 1: if (player.playerPos.x > -1.0f && player.playerPos.y < 0.4f) player.playerPos.x -= player.angle; player.playerPos.y += player.angle; break;
-		case 2: if (player.playerPos.x < 1.0f && player.playerPos.y < 0.4f) player.playerPos.x += player.angle; player.playerPos.y += player.angle; break;
-		case 3: if (player.playerPos.y < 0.6f) player.playerPos.y += player.angle; break;
-		case 4: if (player.playerPos.y > -0.6f) player.playerPos.y -= player.angle; break;
+	case 1: player.Vel.x -= player.Acc; player.Vel.y += player.Acc;  break;
+	case 2: player.Vel.x += player.Acc; player.Vel.y += player.Acc;  break;
+	case 3: player.Vel.y += player.Acc; break;
+	case 4: player.Vel.y -= player.Acc;
+			if (player.Vel.x > 0.0f) player.Vel.x -= player.Acc/40.0f;
+			else player.Vel.x += player.Acc/40.0f;
+			break;
 	}
+
+	if (player.Vel.x > 0.01f) player.Vel.x = 0.01f;
+	if (player.Vel.y > 0.01f) player.Vel.y = 0.01f;
+	if (player.Vel.x < -0.01f) player.Vel.x = -0.01f;
+	if (player.Vel.y < -0.01f) player.Vel.y = -0.01f;
+
+	if (player.gestureId != 0){
+
+		/// UPDATE POSITION ///
+		if ((player.Pos.x + player.Vel.x) > -width && (player.Pos.x + player.Vel.x < width)) {
+			player.Pos.x += player.Vel.x;
+		}
+		if ((player.Pos.y + player.Vel.y > -height) && (player.Pos.y + player.Vel.y < height)) {
+			player.Pos.y += player.Vel.y;
+		}
+		//console() << "ACC = " << player.Acc << endl;
+		//console() << "VEL = " << player.Vel << endl;
+		//console() << "POS = " << player.Pos << endl;
+	}
+	
 }
 
 void CinderWithKinect01App::drawPlayer(){
@@ -518,7 +556,7 @@ void CinderWithKinect01App::drawPlayer(){
 	// Move skeletons down below the rest of the interface
 	gl::pushMatrices();
 	gl::color(0, 255, 0);
-	gl::drawColorCube(player.playerPos, Vec3f(0.5f,0.5f,0.5f));
+	gl::drawColorCube(player.Pos, Vec3f(0.2f,0.2f,0.2f));
 	gl::popMatrices();
 	gl::setMatricesWindow(getWindowSize(), true);
 }
