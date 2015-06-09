@@ -87,10 +87,14 @@ class CinderWithKinect01App : public AppBasic
 
 	//Player
 	Player								player;
+	float								stillMove=0.01f;
+	int									countStillMove;
 
 	//Window
 	float								width = 0.6;
 	float								height = 1.0;
+
+
 
 };
 
@@ -473,22 +477,33 @@ void CinderWithKinect01App::getGesture(){
 		for (Skeleton::const_iterator boneIt = nearestSkeleton->cbegin(); boneIt != nearestSkeleton->cend(); ++boneIt){
 			if (boneIt->first == NUI_SKELETON_POSITION_HAND_LEFT) player.handLeftPos = boneIt->second.getPosition();
 			else if (boneIt->first == NUI_SKELETON_POSITION_HAND_RIGHT) player.handRightPos = boneIt->second.getPosition();
-			//else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_LEFT) player.elbowLeftPos = boneIt->second.getPosition();
-			//else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_RIGHT) player.elbowRightPos = boneIt->second.getPosition();
+			else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_LEFT) player.elbowLeftPos = boneIt->second.getPosition();
+			else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_RIGHT) player.elbowRightPos = boneIt->second.getPosition();
 			else if (boneIt->first == NUI_SKELETON_POSITION_SHOULDER_CENTER) player.centerPos = boneIt->second.getPosition();
 		}
 
 		if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
-			player.gestureId = 1;
+			player.gestureId = 1; ///LEFT
 		}
 		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
-			player.gestureId = 2;
+			player.gestureId = 2; ///RIGHT
 		}
 		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
-			player.gestureId = 3;
+			player.gestureId = 3; /// UP
 		}
+		/*else if ((abs(player.handLeftPos.y - player.centerPos.y) < 0.3f) && (abs(player.handRightPos.y - player.centerPos.y) < 0.3f) && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
+			player.gestureId = 4; /// STILL
+			console() << " STILL " << endl;
+		}
+		*/
 		else if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
-			player.gestureId = 4;
+			player.gestureId = 5; /// DOWN
+		}
+		else if (player.handLeftPos.x){
+
+		}
+		else if (player.handLeftPos.x){
+
 		}
 		else{
 			player.gestureId = 0;
@@ -505,36 +520,39 @@ void CinderWithKinect01App::updatePlayer(){
 
 	player.angle = atanf(distanceLeftY / distanceLeftX) + atanf(distanceRightY / distanceRightX);
 
-
-	if (player.angle < 0.3f) player.Acc = 0.001f;
-	else if (0.3f < player.angle && player.angle < 0.7f) player.Acc = 0.002f;
-	else if (0.7f < player.angle && player.angle < 1.1f) player.Acc = 0.003f;
-	else if (1.1f < player.angle && player.angle < 1.5f) player.Acc = 0.004f;
-	else if (1.5f < player.angle && player.angle < 1.9f) player.Acc = 0.005f;
-	else if (1.9f < player.angle) player.Acc = 0.006f;
+	if (player.angle < 0.3f) player.Acc = 0.005f;
+	else if (0.3f < player.angle && player.angle < 0.7f) player.Acc = 0.01f;
+	else if (0.7f < player.angle && player.angle < 1.1f) player.Acc = 0.015f;
+	else if (1.1f < player.angle && player.angle < 1.5f) player.Acc = 0.02f;
+	else if (1.5f < player.angle && player.angle < 1.9f) player.Acc = 0.025f;
+	else if (1.9f < player.angle) player.Acc = 0.03f;
 
 	if (player.Acc > 0.05f) player.Acc = 0.05f;
 	if (player.Acc < -0.05f) player.Acc = -0.05f;
-
 
 	/// UPDATE VELOCITY ///
 	switch (player.gestureId) {
 	case 1: player.Vel.x -= player.Acc; player.Vel.y += player.Acc;  break;
 	case 2: player.Vel.x += player.Acc; player.Vel.y += player.Acc;  break;
 	case 3: player.Vel.y += player.Acc; break;
-	case 4: player.Vel.y -= player.Acc;
+	case 4: if (player.Vel.x > 0.0f) player.Vel.x -= player.Acc / 30.0f;
+			else player.Vel.x += player.Acc / 30.0f;
+			if (player.Vel.y > 0.0f) player.Vel.y -= player.Acc/30.0f;
+			else player.Vel.y += player.Acc/30.0f;
+			break;
+	case 5: player.Vel.y -= player.Acc;
 			if (player.Vel.x > 0.0f) player.Vel.x -= player.Acc/40.0f;
-			else player.Vel.x += player.Acc/40.0f;
+			else player.Vel.x += player.Acc/50.0f;
 			break;
 	}
 
-	if (player.Vel.x > 0.01f) player.Vel.x = 0.01f;
-	if (player.Vel.y > 0.01f) player.Vel.y = 0.01f;
-	if (player.Vel.x < -0.01f) player.Vel.x = -0.01f;
-	if (player.Vel.y < -0.01f) player.Vel.y = -0.01f;
+	if (player.Vel.x > 0.02f) player.Vel.x = 0.02f;
+	if (player.Vel.y > 0.02f) player.Vel.y = 0.02f;
+	if (player.Vel.x < -0.02f) player.Vel.x = -0.02f;
+	if (player.Vel.y < -0.02f) player.Vel.y = -0.02f;
 
-	if (player.gestureId != 0){
-
+	if (player.gestureId != 0 || player.gestureId != 4){
+		
 		/// UPDATE POSITION ///
 		if ((player.Pos.x + player.Vel.x) > -width && (player.Pos.x + player.Vel.x < width)) {
 			player.Pos.x += player.Vel.x;
@@ -542,10 +560,14 @@ void CinderWithKinect01App::updatePlayer(){
 		if ((player.Pos.y + player.Vel.y > -height) && (player.Pos.y + player.Vel.y < height)) {
 			player.Pos.y += player.Vel.y;
 		}
-		//console() << "ACC = " << player.Acc << endl;
-		//console() << "VEL = " << player.Vel << endl;
-		//console() << "POS = " << player.Pos << endl;
 	}
+	
+	/*else if (player.gestureId == 4){
+		player.Pos.y += stillMove;
+		countStillMove++;
+		if (countStillMove > 120) stillMove *= -1;
+	}
+	*/
 	
 }
 
