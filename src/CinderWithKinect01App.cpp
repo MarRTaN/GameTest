@@ -14,6 +14,7 @@ int posXRange = 2; //Range -2 to 2
 int posYRange = 2; //Range -2 to 2
 int bacteriaBornTime = 40;
 int bacteriaTimeCount = 0;
+bool hit = false;
 
 class Bacteria{
 	public:
@@ -29,7 +30,7 @@ class Bacteria{
 			position.y = static_cast <float> ((rand()) / static_cast <float> (RAND_MAX)*0.1) - 0.05f;
 			position.z = -3.0f;
 		}
-		void updatePostiion(){
+		void updatePosition(){
 			//update z
 			float z = position.z;
 			position.z += vel;
@@ -42,23 +43,31 @@ class Bacteria{
 			if (!isHit){
 				gl::drawSphere(position, bacteriaSize, 10);
 			} else {
-				float z = position.z;
+				bacteriaSize = bacteriaSize / 1.5;
+
 				//draw split
-				float x1 = (position.x + vel / 3);// *cos();
-				float y1 = position.y + vel / 3;
-				gl::drawSphere(Vec3f(x1, y1, z), bacteriaSize / 4, 10);
+				float x, y, z;
+				x = (cos(splitAngle + (rand() % 80))*0.05f) + position.x;
+				y = (sin(splitAngle + (rand() % 80))*0.05f) + position.y;
+				z = position.z + vel / (rand() % 4 + 2);
+				gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
 
-				float x2 = position.x - vel / 3;
-				float y2 = position.y + vel / 3;
-				gl::drawSphere(Vec3f(x2, y2, z), bacteriaSize / 4, 10);
+				x = (cos(splitAngle + (rand() % 80 + 90.0f))*0.05f) + position.x;
+				y = (sin(splitAngle + (rand() % 80 + 90.0f))*0.05f) + position.y;
+				z = position.z + vel / (rand() % 4 + 2);
+				gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
 
-				float x3 = position.x - vel / 3;
-				float y3 = position.y - vel / 3;
-				gl::drawSphere(Vec3f(x3, y3, z), bacteriaSize / 4, 10);
+				x = (cos(splitAngle + (rand() % 80 + 180.0f))*0.05f) + position.x;
+				y = (sin(splitAngle + (rand() % 80 + 180.0f))*0.05f) + position.y;
+				z = position.z + vel / (rand() % 4 + 2);
+				gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
 
-				float x4 = position.x + vel / 3;
-				float y4 = position.y - vel / 3;
-				gl::drawSphere(Vec3f(x4, y4, z), bacteriaSize / 4, 10);
+				x = (cos(splitAngle + (rand() % 80 + 135.0f))*0.025f) + position.x;
+				y = (sin(splitAngle + (rand() % 80 + 135.0f))*0.025f) + position.y;
+				z = position.z + vel / (rand() % 4 + 2);
+				gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
+
+				splitAngle += 0.1f;
 			}
 		}
 };
@@ -392,7 +401,11 @@ void CinderWithKinect01App::updateBacteria(){
 
 	bacteriaTimeCount++;
 	for (int i = 0; i < bacterias.size(); i++){
-		bacterias[i].updatePostiion();
+		if (hit){
+			bacterias[i].isHit = true;
+			hit = false;
+		}
+		bacterias[i].updatePosition();
 		if (bacterias[i].isOutOfBound){
 			bacterias.erase(bacterias.cbegin());
 		}
@@ -456,6 +469,9 @@ void CinderWithKinect01App::keyDown( KeyEvent event )
 		break;
 		case KeyEvent::KEY_f:
 			setFullScreen( ! isFullScreen() );
+		break;
+		case KeyEvent::KEY_a:
+			hit = true;
 		break;
 	}
 }
