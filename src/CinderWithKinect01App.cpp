@@ -83,8 +83,8 @@ class CinderWithKinect01App : public AppBasic
 	int									countStillMove;
 
 	//Window
-	float								width = 0.3;
-	float								height = 0.2;
+	float								width = 0.1;
+	float								height = 0.1;
 
 
 
@@ -317,7 +317,7 @@ void CinderWithKinect01App::updatePlayer(){
 
 	player.angle = atanf(distanceLeftY / distanceLeftX) + atanf(distanceRightY / distanceRightX);
 
-	if (player.angle < 0.3f) player.Acc = 0.005f;
+	if (player.angle < 0.3f) player.Acc = 0.0005f;
 	else if (0.3f < player.angle && player.angle < 0.7f) player.Acc = 0.01f;
 	else if (0.7f < player.angle && player.angle < 1.1f) player.Acc = 0.01f;
 	else if (1.1f < player.angle && player.angle < 1.5f) player.Acc = 0.015f;
@@ -343,11 +343,10 @@ void CinderWithKinect01App::updatePlayer(){
 		case 6: player.Vel.x += player.Acc / 50.0f; player.Vel.y += player.Acc; break;
 	}
 
-	if (player.Vel.x > 0.015f) player.Vel.x = 0.015f;
-	if (player.Vel.y > 0.015f) player.Vel.y = 0.015f;
-	if (player.Vel.x < -0.015f) player.Vel.x = -0.015f;
-	if (player.Vel.y < -0.015f) player.Vel.y = -0.015f;
-
+	if (player.Vel.x > 0.01f) player.Vel.x = 0.01f;
+	if (player.Vel.y > 0.01f) player.Vel.y = 0.01f;
+	if (player.Vel.x < -0.01f) player.Vel.x = -0.01f;
+	if (player.Vel.y < -0.01f) player.Vel.y = -0.01f;
 
 	if (player.gestureId !=0){
 		/// UPDATE POSITION ///
