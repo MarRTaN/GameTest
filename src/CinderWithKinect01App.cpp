@@ -3,6 +3,7 @@
 #include "cinder/gl/gl.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/app/AppNative.h"
+#include <math.h>
 #include "Kinect.h"
 #include "Bacteria.h"
 #include "Stage.h"
@@ -18,6 +19,17 @@ int bacteriaBornTime = 40;
 int bacteriaTimeCount = 0;
 bool hit = false;
 
+class Player{
+	public:
+		int			gestureId;
+		Skeleton	playerSkel;
+		Vec3f		Pos;
+		Vec3f		Vel;
+		float		Acc;
+		Vec3f		handLeftPos, handRightPos, elbowLeftPos, elbowRightPos,centerPos;
+		float		angle;
+};
+
 class CinderWithKinect01App : public AppBasic 
 {
   public:
@@ -32,7 +44,9 @@ class CinderWithKinect01App : public AppBasic
 	void shutdown();
 	void updateBacteria();
 	void drawBacteria();
-
+	void getGesture();
+	void updatePlayer();
+	void drawPlayer();
   private:
 	vector<Vec3f>			mPoints;
 	ci::CameraPersp			mCamera;
@@ -62,6 +76,13 @@ class CinderWithKinect01App : public AppBasic
 
 	//Stage
 	Stage								stage;
+
+	//Player
+	Player								player;
+
+	//Window
+	float								width = 0.6;
+	float								height = 1.0;
 
 };
 
@@ -114,6 +135,8 @@ void CinderWithKinect01App::setup()
 	// Set up camera
 	mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
+
+	player.Pos = Vec3f(0, 0, -1.0f);
 }
 
 void CinderWithKinect01App::update()
@@ -125,6 +148,7 @@ void CinderWithKinect01App::update()
 		if (stage.getStage() == 1){
 			updateBacteria();
 		}
+		updatePlayer();
 	} 
 	else {
 		// If Kinect initialization failed, try again every 90 frames
@@ -132,214 +156,7 @@ void CinderWithKinect01App::update()
 			mKinect->start();
 		}
 	}
-}
 
-void CinderWithKinect01App::drawNearestSkeleton(){
-	// Set up 3D view
-	gl::setMatrices(mCamera);
-
-	// Move skeletons down below the rest of the interface
-	gl::pushMatrices();
-
-	//gl::scale(Vec2f::one() * 1.7f);
-	gl::translate(0.0f, 0.0f, 1.8f);
-
-	float nearestDepth = 100000.0f;
-	vector<Skeleton>::const_iterator nearestSkeleton;
-	bool isTrackedSkeleton = false;;
-
-	// Iterate through skeletons
-	uint32_t i = 0;
-	for (vector<Skeleton>::const_iterator skeletonIt = mSkeletons.cbegin(); skeletonIt != mSkeletons.cend(); ++skeletonIt, i++) {
-
-		// Iterate through joints
-		for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
-
-			const Bone& bone = boneIt->second;
-			Vec3f position = bone.getPosition();
-
-			if (position.z < nearestDepth) {
-				nearestDepth = position.z;
-				nearestSkeleton = skeletonIt;
-				isTrackedSkeleton = true;
-			}
-
-		}
-
-	}
-
-	if (isTrackedSkeleton){
-		// Set color
-		Colorf color = mKinect->getUserColor(i);
-
-		// Iterate through joints
-		for (Skeleton::const_iterator boneIt = nearestSkeleton->cbegin(); boneIt != nearestSkeleton->cend(); ++boneIt) {
-
-			// Set user color
-			gl::color(color);
-
-			// Get position and rotation
-			const Bone& bone = boneIt->second;
-			Vec3f position = bone.getPosition();
-			Matrix44f transform = bone.getAbsoluteRotationMatrix();
-			Vec3f direction = transform.transformPoint(position).normalized();
-			direction *= 0.05f;
-			position.z *= -1.0f;
-
-			// Draw bone
-			glLineWidth(2.0f);
-			JointName startJoint = bone.getStartJoint();
-			if (nearestSkeleton->find(startJoint) != nearestSkeleton->end()) {
-				Vec3f destination = nearestSkeleton->find(startJoint)->second.getPosition();
-				destination.z *= -1.0f;
-				gl::drawLine(position, destination);
-			}
-
-			// Draw joint
-			gl::drawSphere(position, 0.025f, 5);
-
-			// Draw joint orientation				
-			glLineWidth(0.5f);
-			gl::color(ColorAf::white());
-			gl::drawVector(position, position + direction, 0.05f, 0.01f);
-
-		}
-	}
-
-	gl::popMatrices();
-	gl::setMatricesWindow(getWindowSize(), true);
-}
-
-void CinderWithKinect01App::drawNearestBone(){
-	// Set up 3D view
-	gl::setMatrices(mCamera);
-
-	// Move skeletons down below the rest of the interface
-	gl::pushMatrices();
-	//gl::scale(Vec2f::one() * 1.7f);
-	gl::translate(0.0f, 0.0f, 1.8f);
-
-	float nearestDepth = 100000.0f;
-	Skeleton::const_iterator nearestBone;
-	vector<Skeleton>::const_iterator nearestSkeleton;
-	int countSkeleton = 0;
-
-	// Iterate through skeletons
-	uint32_t i = 0;
-	for (vector<Skeleton>::const_iterator skeletonIt = mSkeletons.cbegin(); skeletonIt != mSkeletons.cend(); ++skeletonIt, i++) {
-
-		// Iterate through joints
-		for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
-
-			const Bone& bone = boneIt->second;
-			Vec3f position = bone.getPosition();
-
-			if (position.z < nearestDepth) {
-				nearestDepth = position.z;
-				nearestBone = boneIt;
-				nearestSkeleton = skeletonIt;
-				countSkeleton++;
-			}
-
-		}
-
-	}
-
-
-	if (countSkeleton > 0){
-		// Set color
-		Colorf color = mKinect->getUserColor(i);
-
-		// Set user color
-		gl::color(color);
-
-		// Get position and rotation
-		const Bone& bone = nearestBone->second;
-		Vec3f position = bone.getPosition();
-		Matrix44f transform = bone.getAbsoluteRotationMatrix();
-		Vec3f direction = transform.transformPoint(position).normalized();
-		direction *= 0.05f;
-		position.z *= -1.0f;
-
-		// Draw bone
-		glLineWidth(2.0f);
-		JointName startJoint = bone.getStartJoint();
-		if (nearestSkeleton->find(startJoint) != nearestSkeleton->end()) {
-			Vec3f destination = nearestSkeleton->find(startJoint)->second.getPosition();
-			destination.z *= -1.0f;
-			gl::drawLine(position, destination);
-		}
-
-
-		console() << startJoint << std::endl;
-
-		// Draw joint
-		gl::drawSphere(position, 0.1f, 16);
-	}
-
-	gl::popMatrices();
-	gl::setMatricesWindow(getWindowSize(), true);
-}
-
-void CinderWithKinect01App::drawNearestHand(){
-	// Set up 3D view
-	gl::setMatrices(mCamera);
-
-	// Move skeletons down below the rest of the interface
-	gl::pushMatrices();
-	//gl::scale(Vec2f::one() * 1.7f);
-	gl::translate(0.0f, 0.0f, 1.8f);
-
-	float nearestDepth = 100000.0f;
-
-	// Iterate through skeletons
-	uint32_t i = 0;
-	for (vector<Skeleton>::const_iterator skeletonIt = mSkeletons.cbegin(); skeletonIt != mSkeletons.cend(); ++skeletonIt, i++) {
-
-		// Iterate through joints
-		for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
-
-			const Bone& bone = boneIt->second;
-			Vec3f position = bone.getPosition();
-
-			// Set color
-			Colorf color = mKinect->getUserColor(i);
-
-			// Iterate through joints
-			for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
-
-				const Bone& bone = boneIt->second;
-				JointName startJoint = bone.getStartJoint();
-
-				if (startJoint == 6 || startJoint == 10){
-
-					// Set user color
-					gl::color(color);
-
-
-					// Get position and rotation
-					Vec3f position = bone.getPosition();
-					Matrix44f transform = bone.getAbsoluteRotationMatrix();
-					Vec3f direction = transform.transformPoint(position).normalized();
-					direction *= 0.05f;
-					position.z *= -1.0f;
-
-					// Draw joint
-					//console() << position.x << "," << position.y << "," << position.z << std::endl;
-					gl::drawSphere(position, 0.05f, 10);
-
-					// Draw joint orientation				
-					glLineWidth(0.5f);
-					gl::color(ColorAf::white());
-					gl::drawVector(position, position + direction, 0.05f, 0.01f);				
-				}
-			}
-
-		}
-	}
-
-	gl::popMatrices();
-	gl::setMatricesWindow(getWindowSize(), true);
 }
 
 void CinderWithKinect01App::updateBacteria(){
@@ -376,7 +193,6 @@ void CinderWithKinect01App::drawBacteria(){
 		bacterias[i].draw();
 	}
 
-
 	gl::popMatrices();
 	gl::setMatricesWindow(getWindowSize(), true);
 }
@@ -393,6 +209,7 @@ void CinderWithKinect01App::draw()
 
 		stage.drawStage();
 		if(stage.getStage() == 1) drawBacteria();
+		drawPlayer();
 	}
 }
 
@@ -425,5 +242,121 @@ void CinderWithKinect01App::shutdown()
 	mKinect->stop();
 	mPoints.clear();
 }
-/////
+
+void CinderWithKinect01App::getGesture(){
+
+	float nearestDepth = 100000.0f;
+	vector<Skeleton>::const_iterator nearestSkeleton;
+	bool isTrackedSkeleton = false;
+	// Iterate through skeletons
+	uint32_t i = 0;
+	for (vector<Skeleton>::const_iterator skeletonIt = mSkeletons.cbegin(); skeletonIt != mSkeletons.cend(); ++skeletonIt, i++) {
+
+		// Iterate through joints
+		for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
+
+			const Bone& bone = boneIt->second;
+			Vec3f position = bone.getPosition();
+
+			if (position.z < nearestDepth) {
+				nearestDepth = position.z;
+				nearestSkeleton = skeletonIt;
+				isTrackedSkeleton = true;
+			}
+		}
+	}
+
+	if (isTrackedSkeleton){
+		for (Skeleton::const_iterator boneIt = nearestSkeleton->cbegin(); boneIt != nearestSkeleton->cend(); ++boneIt){
+			if (boneIt->first == NUI_SKELETON_POSITION_HAND_LEFT) player.handLeftPos = boneIt->second.getPosition();
+			else if (boneIt->first == NUI_SKELETON_POSITION_HAND_RIGHT) player.handRightPos = boneIt->second.getPosition();
+			//else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_LEFT) player.elbowLeftPos = boneIt->second.getPosition();
+			//else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_RIGHT) player.elbowRightPos = boneIt->second.getPosition();
+			else if (boneIt->first == NUI_SKELETON_POSITION_SHOULDER_CENTER) player.centerPos = boneIt->second.getPosition();
+		}
+
+		if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
+			player.gestureId = 1;
+		}
+		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
+			player.gestureId = 2;
+		}
+		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
+			player.gestureId = 3;
+		}
+		else if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
+			player.gestureId = 4;
+		}
+		else{
+			player.gestureId = 0;
+		}
+	}
+}
+
+void CinderWithKinect01App::updatePlayer(){
+	getGesture();
+	float distanceLeftX = abs(player.handLeftPos.x - player.centerPos.x);
+	float distanceLeftY = abs(player.handLeftPos.y - player.centerPos.y);
+	float distanceRightX = abs(player.handRightPos.x - player.centerPos.x);
+	float distanceRightY = abs(player.handRightPos.y - player.centerPos.y);
+
+	player.angle = atanf(distanceLeftY / distanceLeftX) + atanf(distanceRightY / distanceRightX);
+
+
+	if (player.angle < 0.3f) player.Acc = 0.001f;
+	else if (0.3f < player.angle && player.angle < 0.7f) player.Acc = 0.002f;
+	else if (0.7f < player.angle && player.angle < 1.1f) player.Acc = 0.003f;
+	else if (1.1f < player.angle && player.angle < 1.5f) player.Acc = 0.004f;
+	else if (1.5f < player.angle && player.angle < 1.9f) player.Acc = 0.005f;
+	else if (1.9f < player.angle) player.Acc = 0.006f;
+
+	if (player.Acc > 0.05f) player.Acc = 0.05f;
+	if (player.Acc < -0.05f) player.Acc = -0.05f;
+
+
+	/// UPDATE VELOCITY ///
+	switch (player.gestureId) {
+	case 1: player.Vel.x -= player.Acc; player.Vel.y += player.Acc;  break;
+	case 2: player.Vel.x += player.Acc; player.Vel.y += player.Acc;  break;
+	case 3: player.Vel.y += player.Acc; break;
+	case 4: player.Vel.y -= player.Acc;
+			if (player.Vel.x > 0.0f) player.Vel.x -= player.Acc/40.0f;
+			else player.Vel.x += player.Acc/40.0f;
+			break;
+	}
+
+	if (player.Vel.x > 0.01f) player.Vel.x = 0.01f;
+	if (player.Vel.y > 0.01f) player.Vel.y = 0.01f;
+	if (player.Vel.x < -0.01f) player.Vel.x = -0.01f;
+	if (player.Vel.y < -0.01f) player.Vel.y = -0.01f;
+
+	if (player.gestureId != 0){
+
+		/// UPDATE POSITION ///
+		if ((player.Pos.x + player.Vel.x) > -width && (player.Pos.x + player.Vel.x < width)) {
+			player.Pos.x += player.Vel.x;
+		}
+		if ((player.Pos.y + player.Vel.y > -height) && (player.Pos.y + player.Vel.y < height)) {
+			player.Pos.y += player.Vel.y;
+		}
+		//console() << "ACC = " << player.Acc << endl;
+		//console() << "VEL = " << player.Vel << endl;
+		//console() << "POS = " << player.Pos << endl;
+	}
+	
+}
+
+void CinderWithKinect01App::drawPlayer(){
+	// Set up 3D view
+	gl::setMatrices(mCamera);
+
+	// Move skeletons down below the rest of the interface
+	gl::pushMatrices();
+	gl::color(0, 255, 0);
+	gl::drawColorCube(player.Pos, Vec3f(0.2f,0.2f,0.2f));
+	gl::popMatrices();
+	gl::setMatricesWindow(getWindowSize(), true);
+}
+
+
 CINDER_APP_BASIC( CinderWithKinect01App, RendererGl )
