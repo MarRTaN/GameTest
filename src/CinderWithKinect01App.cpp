@@ -4,6 +4,8 @@
 #include "cinder/gl/Texture.h"
 #include "cinder/app/AppNative.h"
 #include "Kinect.h"
+#include <math.h>
+
 using namespace ci;
 using namespace ci::app;
 using namespace std;
@@ -28,6 +30,15 @@ class Bacteria{
 
 };
 
+class Player{
+	public:
+		int			gestureId;
+		Skeleton	playerSkel;
+		Vec3f		playerPos;
+		Vec3f		handLeftPos, handRightPos, elbowLeftPos, elbowRightPos,centerPos;
+		float		angle;
+};
+
 class CinderWithKinect01App : public AppBasic 
 {
   public:
@@ -42,7 +53,9 @@ class CinderWithKinect01App : public AppBasic
 	void shutdown();
 	void updateBacteria();
 	void drawBacteria();
-
+	void getGesture();
+	void updatePlayer();
+	void drawPlayer();
   private:
 	vector<Vec3f>			mPoints;
 	ci::CameraPersp			mCamera;
@@ -69,6 +82,9 @@ class CinderWithKinect01App : public AppBasic
 
 	//Bacteria
 	vector<Bacteria>					bacterias;
+
+	//Player
+	Player								player;
 
 };
 
@@ -121,6 +137,8 @@ void CinderWithKinect01App::setup()
 	// Set up camera
 	mCamera.lookAt(Vec3f(0.0f, 0.0f, 2.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
+
+	player.playerPos = Vec3f(0, 0, -1.0f);
 }
 
 void CinderWithKinect01App::update()
@@ -129,6 +147,7 @@ void CinderWithKinect01App::update()
 	if ( mKinect->isCapturing() ) {
 		mKinect->update();		
 		updateBacteria();
+		updatePlayer();
 		///test
 	} 
 	else {
@@ -137,6 +156,7 @@ void CinderWithKinect01App::update()
 			mKinect->start();
 		}
 	}
+
 }
 
 void CinderWithKinect01App::drawNearestSkeleton(){
@@ -377,7 +397,6 @@ void CinderWithKinect01App::drawBacteria(){
 		gl::drawSphere(bacterias[i].position, 0.05f, 10);
 	}
 
-
 	gl::popMatrices();
 	gl::setMatricesWindow(getWindowSize(), true);
 }
@@ -392,23 +411,8 @@ void CinderWithKinect01App::draw()
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
 
-		// Draw depth and color textures
-		/*gl::color(Colorf::white());
-		if (mColorSurface) {
-			Area srcArea(0, 0, mColorSurface.getWidth(), mColorSurface.getHeight());
-			Rectf destRect(0.0f, 0.0f, getWindowWidth(), getWindowHeight());
-			gl::draw(gl::Texture(mColorSurface), srcArea, destRect);
-		}*/
-		/*gl::color(Colorf::white());
-		if (mDepthSurface) {
-		Area srcArea(0, 0, mDepthSurface.getWidth(), mDepthSurface.getHeight());
-		Rectf destRect(0.0f, 0.0f, getWindowWidth(), getWindowHeight());
-		gl::draw(gl::Texture(mDepthSurface), srcArea, destRect);
-		console() << mDepthSurface.getChannelAlpha() << std::endl;
-		}*/
-
-		//drawNearestHand();
 		drawBacteria();
+		drawPlayer();
 	}
 }
 
@@ -435,5 +439,89 @@ void CinderWithKinect01App::shutdown()
 	mKinect->stop();
 	mPoints.clear();
 }
-/////
+
+void CinderWithKinect01App::getGesture(){
+
+	float nearestDepth = 100000.0f;
+	vector<Skeleton>::const_iterator nearestSkeleton;
+	bool isTrackedSkeleton = false;
+	// Iterate through skeletons
+	uint32_t i = 0;
+	for (vector<Skeleton>::const_iterator skeletonIt = mSkeletons.cbegin(); skeletonIt != mSkeletons.cend(); ++skeletonIt, i++) {
+
+		// Iterate through joints
+		for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
+
+			const Bone& bone = boneIt->second;
+			Vec3f position = bone.getPosition();
+
+			if (position.z < nearestDepth) {
+				nearestDepth = position.z;
+				nearestSkeleton = skeletonIt;
+				isTrackedSkeleton = true;
+			}
+		}
+	}
+
+	if (isTrackedSkeleton){
+		for (Skeleton::const_iterator boneIt = nearestSkeleton->cbegin(); boneIt != nearestSkeleton->cend(); ++boneIt){
+			if (boneIt->first == NUI_SKELETON_POSITION_HAND_LEFT) player.handLeftPos = boneIt->second.getPosition();
+			else if (boneIt->first == NUI_SKELETON_POSITION_HAND_RIGHT) player.handRightPos = boneIt->second.getPosition();
+			//else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_LEFT) player.elbowLeftPos = boneIt->second.getPosition();
+			//else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_RIGHT) player.elbowRightPos = boneIt->second.getPosition();
+			else if (boneIt->first == NUI_SKELETON_POSITION_SHOULDER_CENTER) player.centerPos = boneIt->second.getPosition();
+		}
+
+		if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
+			player.gestureId = 1;
+			console() << "FLY LEFT" << endl;
+		}
+		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
+			player.gestureId = 2;
+			console() << "FLY RIGHT" << endl;
+		}
+		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
+			player.gestureId = 3;
+			console() << "FLY UP" << endl;
+		}
+		else if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
+			player.gestureId = 4;
+			console() << "FLY DOWN" << endl;
+		}
+		else{
+			player.gestureId = 0;
+			console() << " STILL " << endl;
+		}
+	}
+}
+
+void CinderWithKinect01App::updatePlayer(){
+	getGesture();
+	float distanceLeftX = abs(player.handLeftPos.x - player.centerPos.x);
+	float distanceLeftY = abs(player.handLeftPos.y - player.centerPos.y);
+	float distanceRightX = abs(player.handRightPos.x - player.centerPos.x);
+	float distanceRightY = abs(player.handRightPos.y - player.centerPos.y);
+	player.angle = atanf(distanceLeftY / distanceLeftY) + atanf(distanceRightY / distanceRightY);
+	player.angle = player.angle/50.0f;
+	switch (player.gestureId) {
+		case 1: if (player.playerPos.x > -1.0f && player.playerPos.y < 0.4f) player.playerPos.x -= player.angle; player.playerPos.y += player.angle; break;
+		case 2: if (player.playerPos.x < 1.0f && player.playerPos.y < 0.4f) player.playerPos.x += player.angle; player.playerPos.y += player.angle; break;
+		case 3: if (player.playerPos.y < 0.6f) player.playerPos.y += player.angle; break;
+		case 4: if (player.playerPos.y > -0.6f) player.playerPos.y -= player.angle; break;
+	}
+}
+
+void CinderWithKinect01App::drawPlayer(){
+	// Set up 3D view
+	gl::setMatrices(mCamera);
+
+	// Move skeletons down below the rest of the interface
+	gl::pushMatrices();
+	gl::color(0, 255, 0);
+	gl::drawColorCube(player.playerPos, Vec3f(0.5f,0.5f,0.5f));
+	gl::popMatrices();
+	gl::setMatricesWindow(getWindowSize(), true);
+}
+
+
 CINDER_APP_BASIC( CinderWithKinect01App, RendererGl )
