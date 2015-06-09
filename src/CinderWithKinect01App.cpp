@@ -3,8 +3,10 @@
 #include "cinder/gl/gl.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/app/AppNative.h"
-#include "Kinect.h"
 #include <math.h>
+#include "Kinect.h"
+#include "Bacteria.h"
+#include "Stage.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -13,22 +15,9 @@ using namespace KinectSdk;
 
 int posXRange = 2; //Range -2 to 2
 int posYRange = 2; //Range -2 to 2
-int bacteriaBornTime = 10;
+int bacteriaBornTime = 100;
 int bacteriaTimeCount = 0;
-
-class Bacteria{
-	public:
-		Vec3f	position;
-		bool	isHit;
-		float	vel = 0.05f;
-		Bacteria(){
-			//initial bacteria position
-			position.x = rand() % (posXRange * 2) - posXRange;
-			position.y = rand() % (posYRange * 2) - (posYRange * 2);
-			position.z = -3.0f;
-		}
-
-};
+bool hit = false;
 
 class Player{
 	public:
@@ -85,14 +74,17 @@ class CinderWithKinect01App : public AppBasic
 	//Bacteria
 	vector<Bacteria>					bacterias;
 
+	//Stage
+	Stage								stage;
+
 	//Player
 	Player								player;
 	float								stillMove=0.01f;
 	int									countStillMove;
 
 	//Window
-	float								width = 0.6;
-	float								height = 1.0;
+	float								width = 0.3;
+	float								height = 0.2;
 
 
 
@@ -103,7 +95,7 @@ const Vec2i	kKinectSize( 454, 750 );
 
 void CinderWithKinect01App::prepareSettings( Settings *settings )
 {
-	settings->setWindowSize(454,750);
+	settings->setWindowSize(454, 750);
 	settings->setFrameRate(60.0f);
 }
 
@@ -145,20 +137,22 @@ void CinderWithKinect01App::setup()
 	mCallbackColorId = mKinect->addColorCallback(&CinderWithKinect01App::onColorData, this);
 
 	// Set up camera
-	mCamera.lookAt(Vec3f(0.0f, 0.0f, 2.0f), Vec3f::zero());
+	mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
 
-	player.Pos = Vec3f(0, 0, -1.0f);
+	player.Pos = Vec3f(0, 0, 1.0f);
 }
 
 void CinderWithKinect01App::update()
 {
 	// Device is capturing
 	if ( mKinect->isCapturing() ) {
-		mKinect->update();		
-		//updateBacteria();
+		mKinect->update();
+		stage.updateStage();
+		if (stage.getStage() == 1){
+			updateBacteria();
+		}
 		updatePlayer();
-		///test
 	} 
 	else {
 		// If Kinect initialization failed, try again every 90 frames
@@ -169,228 +163,24 @@ void CinderWithKinect01App::update()
 
 }
 
-void CinderWithKinect01App::drawNearestSkeleton(){
-	// Set up 3D view
-	gl::setMatrices(mCamera);
-
-	// Move skeletons down below the rest of the interface
-	gl::pushMatrices();
-
-	//gl::scale(Vec2f::one() * 1.7f);
-	gl::translate(0.0f, 0.0f, 1.8f);
-
-	float nearestDepth = 100000.0f;
-	vector<Skeleton>::const_iterator nearestSkeleton;
-	bool isTrackedSkeleton = false;;
-
-	// Iterate through skeletons
-	uint32_t i = 0;
-	for (vector<Skeleton>::const_iterator skeletonIt = mSkeletons.cbegin(); skeletonIt != mSkeletons.cend(); ++skeletonIt, i++) {
-
-		// Iterate through joints
-		for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
-
-			const Bone& bone = boneIt->second;
-			Vec3f position = bone.getPosition();
-
-			if (position.z < nearestDepth) {
-				nearestDepth = position.z;
-				nearestSkeleton = skeletonIt;
-				isTrackedSkeleton = true;
-			}
-
-		}
-
-	}
-
-	if (isTrackedSkeleton){
-		// Set color
-		Colorf color = mKinect->getUserColor(i);
-
-		// Iterate through joints
-		for (Skeleton::const_iterator boneIt = nearestSkeleton->cbegin(); boneIt != nearestSkeleton->cend(); ++boneIt) {
-
-			// Set user color
-			gl::color(color);
-
-			// Get position and rotation
-			const Bone& bone = boneIt->second;
-			Vec3f position = bone.getPosition();
-			Matrix44f transform = bone.getAbsoluteRotationMatrix();
-			Vec3f direction = transform.transformPoint(position).normalized();
-			direction *= 0.05f;
-			position.z *= -1.0f;
-
-			// Draw bone
-			glLineWidth(2.0f);
-			JointName startJoint = bone.getStartJoint();
-			if (nearestSkeleton->find(startJoint) != nearestSkeleton->end()) {
-				Vec3f destination = nearestSkeleton->find(startJoint)->second.getPosition();
-				destination.z *= -1.0f;
-				gl::drawLine(position, destination);
-			}
-
-			// Draw joint
-			gl::drawSphere(position, 0.025f, 5);
-
-			// Draw joint orientation				
-			glLineWidth(0.5f);
-			gl::color(ColorAf::white());
-			gl::drawVector(position, position + direction, 0.05f, 0.01f);
-
-		}
-	}
-
-	gl::popMatrices();
-	gl::setMatricesWindow(getWindowSize(), true);
-}
-
-void CinderWithKinect01App::drawNearestBone(){
-	// Set up 3D view
-	gl::setMatrices(mCamera);
-
-	// Move skeletons down below the rest of the interface
-	gl::pushMatrices();
-	//gl::scale(Vec2f::one() * 1.7f);
-	gl::translate(0.0f, 0.0f, 1.8f);
-
-	float nearestDepth = 100000.0f;
-	Skeleton::const_iterator nearestBone;
-	vector<Skeleton>::const_iterator nearestSkeleton;
-	int countSkeleton = 0;
-
-	// Iterate through skeletons
-	uint32_t i = 0;
-	for (vector<Skeleton>::const_iterator skeletonIt = mSkeletons.cbegin(); skeletonIt != mSkeletons.cend(); ++skeletonIt, i++) {
-
-		// Iterate through joints
-		for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
-
-			const Bone& bone = boneIt->second;
-			Vec3f position = bone.getPosition();
-
-			if (position.z < nearestDepth) {
-				nearestDepth = position.z;
-				nearestBone = boneIt;
-				nearestSkeleton = skeletonIt;
-				countSkeleton++;
-			}
-
-		}
-
-	}
-
-
-	if (countSkeleton > 0){
-		// Set color
-		Colorf color = mKinect->getUserColor(i);
-
-		// Set user color
-		gl::color(color);
-
-		// Get position and rotation
-		const Bone& bone = nearestBone->second;
-		Vec3f position = bone.getPosition();
-		Matrix44f transform = bone.getAbsoluteRotationMatrix();
-		Vec3f direction = transform.transformPoint(position).normalized();
-		direction *= 0.05f;
-		position.z *= -1.0f;
-
-		// Draw bone
-		glLineWidth(2.0f);
-		JointName startJoint = bone.getStartJoint();
-		if (nearestSkeleton->find(startJoint) != nearestSkeleton->end()) {
-			Vec3f destination = nearestSkeleton->find(startJoint)->second.getPosition();
-			destination.z *= -1.0f;
-			gl::drawLine(position, destination);
-		}
-
-
-		console() << startJoint << std::endl;
-
-		// Draw joint
-		gl::drawSphere(position, 0.1f, 16);
-	}
-
-	gl::popMatrices();
-	gl::setMatricesWindow(getWindowSize(), true);
-}
-
-void CinderWithKinect01App::drawNearestHand(){
-	// Set up 3D view
-	gl::setMatrices(mCamera);
-
-	// Move skeletons down below the rest of the interface
-	gl::pushMatrices();
-	//gl::scale(Vec2f::one() * 1.7f);
-	gl::translate(0.0f, 0.0f, 1.8f);
-
-	float nearestDepth = 100000.0f;
-
-	// Iterate through skeletons
-	uint32_t i = 0;
-	for (vector<Skeleton>::const_iterator skeletonIt = mSkeletons.cbegin(); skeletonIt != mSkeletons.cend(); ++skeletonIt, i++) {
-
-		// Iterate through joints
-		for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
-
-			const Bone& bone = boneIt->second;
-			Vec3f position = bone.getPosition();
-
-			// Set color
-			Colorf color = mKinect->getUserColor(i);
-
-			// Iterate through joints
-			for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
-
-				const Bone& bone = boneIt->second;
-				JointName startJoint = bone.getStartJoint();
-
-				if (startJoint == 6 || startJoint == 10){
-
-					// Set user color
-					gl::color(color);
-
-
-					// Get position and rotation
-					Vec3f position = bone.getPosition();
-					Matrix44f transform = bone.getAbsoluteRotationMatrix();
-					Vec3f direction = transform.transformPoint(position).normalized();
-					direction *= 0.05f;
-					position.z *= -1.0f;
-
-					// Draw joint
-					//console() << position.x << "," << position.y << "," << position.z << std::endl;
-					gl::drawSphere(position, 0.05f, 10);
-
-					// Draw joint orientation				
-					glLineWidth(0.5f);
-					gl::color(ColorAf::white());
-					gl::drawVector(position, position + direction, 0.05f, 0.01f);				
-				}
-			}
-
-		}
-	}
-
-	gl::popMatrices();
-	gl::setMatricesWindow(getWindowSize(), true);
-}
-
 void CinderWithKinect01App::updateBacteria(){
 	if (bacteriaTimeCount > bacteriaBornTime){
 		Bacteria newBac = Bacteria();
 		bacterias.push_back(newBac);
 		bacteriaTimeCount = 0;
+		bacteriaBornTime = rand() % 20 + 30;
 	}
 
 	bacteriaTimeCount++;
-
 	for (int i = 0; i < bacterias.size(); i++){
-		float z = bacterias[i].position.z;
-		bacterias[i].position.z += bacterias[i].vel;
-		if (z > 0.0f){
-			//bacterias.erase(std::find(bacterias.begin(), bacterias.end(), bacterias[i]));
+		if (hit){
+			stage.score++;
+			bacterias[i].isHit = true;
+			hit = false;
+		}
+		bacterias[i].updatePosition();
+		if (bacterias[i].isOutOfBound){
+			bacterias.erase(bacterias.cbegin());
 		}
 	}
 }
@@ -398,13 +188,13 @@ void CinderWithKinect01App::updateBacteria(){
 void CinderWithKinect01App::drawBacteria(){
 	// Set up 3D view
 	gl::setMatrices(mCamera);
+	gl::translate(0.0f, 0.0f, 0.0f);
 
 	// Move skeletons down below the rest of the interface
 	gl::pushMatrices();
 
 	for (int i = 0; i < bacterias.size(); i++){
-		gl::color(ColorAf::white());
-		gl::drawSphere(bacterias[i].position, 0.05f, 10);
+		bacterias[i].draw();
 	}
 
 	gl::popMatrices();
@@ -421,8 +211,10 @@ void CinderWithKinect01App::draw()
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
 
-		drawBacteria();
+		stage.drawStage();
+
 		drawPlayer();
+		if(stage.getStage() == 1) drawBacteria();
 	}
 }
 
@@ -436,6 +228,12 @@ void CinderWithKinect01App::keyDown( KeyEvent event )
 		break;
 		case KeyEvent::KEY_f:
 			setFullScreen( ! isFullScreen() );
+		break;
+		case KeyEvent::KEY_a:
+			hit = true;
+		break;
+		case KeyEvent::KEY_s:
+			stage.nextStage();
 		break;
 	}
 }
@@ -550,8 +348,8 @@ void CinderWithKinect01App::updatePlayer(){
 	if (player.Vel.x < -0.015f) player.Vel.x = -0.015f;
 	if (player.Vel.y < -0.015f) player.Vel.y = -0.015f;
 
-	if (player.gestureId != 0){
-		
+
+	if (player.gestureId !=0){
 		/// UPDATE POSITION ///
 		if ((player.Pos.x + player.Vel.x) > -width && (player.Pos.x + player.Vel.x < width)) {
 			player.Pos.x += player.Vel.x;
@@ -563,16 +361,12 @@ void CinderWithKinect01App::updatePlayer(){
 		else player.Vel.y = 0.0f;
 	}
 	
-	/*else if (player.gestureId == 4){
-		player.Pos.y += stillMove;
-		countStillMove++;
-		if (countStillMove > 120) stillMove *= -1;
-	}
-	*/
 	
 }
 
 void CinderWithKinect01App::drawPlayer(){
+	mCamera.lookAt(player.Pos, Vec3f(player.Pos.x,player.Pos.y,0.0f));
+	/*
 	// Set up 3D view
 	gl::setMatrices(mCamera);
 
@@ -581,7 +375,7 @@ void CinderWithKinect01App::drawPlayer(){
 	gl::color(0, 255, 0);
 	gl::drawColorCube(player.Pos, Vec3f(0.2f,0.2f,0.2f));
 	gl::popMatrices();
-	gl::setMatricesWindow(getWindowSize(), true);
+	gl::setMatricesWindow(getWindowSize(), true);*/
 }
 
 
