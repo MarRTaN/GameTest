@@ -15,7 +15,7 @@ using namespace KinectSdk;
 
 int posXRange = 2; //Range -2 to 2
 int posYRange = 2; //Range -2 to 2
-int bacteriaBornTime = 40;
+int bacteriaBornTime = 100;
 int bacteriaTimeCount = 0;
 bool hit = false;
 
@@ -81,8 +81,8 @@ class CinderWithKinect01App : public AppBasic
 	Player								player;
 
 	//Window
-	float								width = 0.6;
-	float								height = 1.0;
+	float								width = 0.3;
+	float								height = 0.2;
 
 };
 
@@ -136,7 +136,7 @@ void CinderWithKinect01App::setup()
 	mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
 
-	player.Pos = Vec3f(0, 0, -1.0f);
+	player.Pos = Vec3f(0, 0, 1.0f);
 }
 
 void CinderWithKinect01App::update()
@@ -208,8 +208,9 @@ void CinderWithKinect01App::draw()
 		gl::setMatricesWindow(getWindowSize(), true);
 
 		stage.drawStage();
-		if(stage.getStage() == 1) drawBacteria();
+
 		drawPlayer();
+		if(stage.getStage() == 1) drawBacteria();
 	}
 }
 
@@ -302,7 +303,7 @@ void CinderWithKinect01App::updatePlayer(){
 
 	player.angle = atanf(distanceLeftY / distanceLeftX) + atanf(distanceRightY / distanceRightX);
 
-
+	/*
 	if (player.angle < 0.3f) player.Acc = 0.001f;
 	else if (0.3f < player.angle && player.angle < 0.7f) player.Acc = 0.002f;
 	else if (0.7f < player.angle && player.angle < 1.1f) player.Acc = 0.003f;
@@ -310,8 +311,7 @@ void CinderWithKinect01App::updatePlayer(){
 	else if (1.5f < player.angle && player.angle < 1.9f) player.Acc = 0.005f;
 	else if (1.9f < player.angle) player.Acc = 0.006f;
 
-	if (player.Acc > 0.05f) player.Acc = 0.05f;
-	if (player.Acc < -0.05f) player.Acc = -0.05f;
+	
 
 
 	/// UPDATE VELOCITY ///
@@ -330,8 +330,18 @@ void CinderWithKinect01App::updatePlayer(){
 	if (player.Vel.x < -0.01f) player.Vel.x = -0.01f;
 	if (player.Vel.y < -0.01f) player.Vel.y = -0.01f;
 
-	if (player.gestureId != 0){
+	*/
+	float speed = 0.02;
+	switch (player.gestureId) {
+	case 1: player.Vel = Vec3f(-speed,0.0f,0.0f); break;
+	case 2: player.Vel = Vec3f(speed, 0.0f, 0.0f); break;
+	case 3: player.Vel = Vec3f(0.0f, speed, 0.0f); break;
+	case 4: player.Vel = Vec3f(0.0f, -speed, 0.0f); break;
+	case 5: player.Vel = Vec3f(-speed, speed, 0.0f); break;
+	case 6: player.Vel = Vec3f(speed, speed, 0.0f); break;
+	}
 
+	if (player.gestureId !=0){
 		/// UPDATE POSITION ///
 		if ((player.Pos.x + player.Vel.x) > -width && (player.Pos.x + player.Vel.x < width)) {
 			player.Pos.x += player.Vel.x;
@@ -347,6 +357,8 @@ void CinderWithKinect01App::updatePlayer(){
 }
 
 void CinderWithKinect01App::drawPlayer(){
+	mCamera.lookAt(player.Pos, Vec3f(player.Pos.x,player.Pos.y,0.0f));
+	/*
 	// Set up 3D view
 	gl::setMatrices(mCamera);
 
@@ -355,7 +367,7 @@ void CinderWithKinect01App::drawPlayer(){
 	gl::color(0, 255, 0);
 	gl::drawColorCube(player.Pos, Vec3f(0.2f,0.2f,0.2f));
 	gl::popMatrices();
-	gl::setMatricesWindow(getWindowSize(), true);
+	gl::setMatricesWindow(getWindowSize(), true);*/
 }
 
 
