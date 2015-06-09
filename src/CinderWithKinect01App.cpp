@@ -47,6 +47,8 @@ class CinderWithKinect01App : public AppBasic
 	void getGesture();
 	void updatePlayer();
 	void drawPlayer();
+	void reset();
+
   private:
 	vector<Vec3f>			mPoints;
 	ci::CameraPersp			mCamera;
@@ -136,7 +138,7 @@ void CinderWithKinect01App::setup()
 	mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
 
-	player.Pos = Vec3f(0, 0, 1.0f);
+	player.Pos = Vec3f(0, -0.2f, 1.0f);
 }
 
 void CinderWithKinect01App::update()
@@ -145,9 +147,12 @@ void CinderWithKinect01App::update()
 	if ( mKinect->isCapturing() ) {
 		mKinect->update();
 		updatePlayer();
-		stage.updateStage(player.Pos);
+		stage.updateStage(player.handRightPos, mCamera);
 		if (stage.getStage() == 1){
 			updateBacteria();
+		}
+		else{
+			mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 		}
 	} 
 	else {
@@ -174,7 +179,7 @@ void CinderWithKinect01App::updateBacteria(){
 		Vec3f ba = bacterias[i].position;
 
 		//Check Baacteria Hit
-		if (abs(pl.x - ba.x) < hitRange && abs(pl.y - ba.y) < hitRange && ba.z > -0.1f){
+		if (abs(pl.x - ba.x) < hitRange && abs(pl.y - ba.y) < hitRange && ba.z > -0.1f && ba.z < 0.0f){
 			stage.score++;
 			bacterias[i].isHit = true;
 			hit = false;
@@ -213,9 +218,13 @@ void CinderWithKinect01App::draw()
 		gl::setMatricesWindow(getWindowSize(), true);
 
 		stage.drawStage();
-
-		drawPlayer();
-		if(stage.getStage() == 1) drawBacteria();
+		if (stage.getStage() == 1) {
+			drawPlayer();
+			drawBacteria();
+		}
+		else{
+			reset();
+		}
 	}
 }
 
@@ -373,6 +382,15 @@ void CinderWithKinect01App::drawPlayer(){
 	gl::drawColorCube(player.Pos, Vec3f(0.2f,0.2f,0.2f));
 	gl::popMatrices();
 	gl::setMatricesWindow(getWindowSize(), true);*/
+}
+
+void CinderWithKinect01App::reset(){
+	// Set up camera
+	mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
+	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
+
+	player.Pos = Vec3f(0, -0.2f, 1.0f);
+	bacterias.clear();
 }
 
 
