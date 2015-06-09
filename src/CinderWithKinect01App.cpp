@@ -144,8 +144,8 @@ void CinderWithKinect01App::update()
 	// Device is capturing
 	if ( mKinect->isCapturing() ) {
 		mKinect->update();
-		stage.updateStage();
 		updatePlayer();
+		stage.updateStage(player.Pos);
 		if (stage.getStage() == 1){
 			updateBacteria();
 		}

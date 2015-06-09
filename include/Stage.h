@@ -16,7 +16,7 @@ class Stage{
 		Vec3f	handPos;
 
 		void	nextStage();
-		void	updateStage();
+		void	updateStage(Vec3f pos);
 		void	drawStage();
 		void	getHandPosition();
 		int		getStage();
