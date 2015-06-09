@@ -38,14 +38,14 @@
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\FaceTrackLib.h">
       <Filter>blocks\Cinder-KinectSdk</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h">
-      <Filter>blocks\Cinder-KinectSdk</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Resources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\include\cinder\CinderResources.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h">
+      <Filter>blocks\Cinder-KinectSdk</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

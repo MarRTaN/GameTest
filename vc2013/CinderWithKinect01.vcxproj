@@ -111,8 +111,8 @@
     <ResourceCompile Include="Resources.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h" />
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\FaceTrackLib.h" />
-    <ClInclude Include="..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h" />
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\include\cinder\CinderResources.h" />
     <ClInclude Include="..\include\Resources.h" />
   </ItemGroup>

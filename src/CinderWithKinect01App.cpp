@@ -12,21 +12,55 @@ using namespace KinectSdk;
 
 int posXRange = 2; //Range -2 to 2
 int posYRange = 2; //Range -2 to 2
-int bacteriaBornTime = 10;
+int bacteriaBornTime = 40;
 int bacteriaTimeCount = 0;
 
 class Bacteria{
 	public:
 		Vec3f	position;
-		bool	isHit;
 		float	vel = 0.05f;
+		float	bacteriaSize = 0.05f;
+		float	splitAngle = 0.0f;
+		bool	isHit = false;
+		bool	isOutOfBound = false;
 		Bacteria(){
 			//initial bacteria position
-			position.x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) - 0.5f;
-			position.y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) - 0.5f;
+			position.x = static_cast <float> ((rand()) / static_cast <float> (RAND_MAX)*0.3) - 0.15f;
+			position.y = static_cast <float> ((rand()) / static_cast <float> (RAND_MAX)*0.1) - 0.05f;
 			position.z = -3.0f;
 		}
+		void updatePostiion(){
+			//update z
+			float z = position.z;
+			position.z += vel;
+			if (position.z > 1.0f){
+				isOutOfBound = true;
+			}
+		}
+		void draw(){
+			gl::color(ColorAf::white());
+			if (!isHit){
+				gl::drawSphere(position, bacteriaSize, 10);
+			} else {
+				float z = position.z;
+				//draw split
+				float x1 = (position.x + vel / 3);// *cos();
+				float y1 = position.y + vel / 3;
+				gl::drawSphere(Vec3f(x1, y1, z), bacteriaSize / 4, 10);
 
+				float x2 = position.x - vel / 3;
+				float y2 = position.y + vel / 3;
+				gl::drawSphere(Vec3f(x2, y2, z), bacteriaSize / 4, 10);
+
+				float x3 = position.x - vel / 3;
+				float y3 = position.y - vel / 3;
+				gl::drawSphere(Vec3f(x3, y3, z), bacteriaSize / 4, 10);
+
+				float x4 = position.x + vel / 3;
+				float y4 = position.y - vel / 3;
+				gl::drawSphere(Vec3f(x4, y4, z), bacteriaSize / 4, 10);
+			}
+		}
 };
 
 class CinderWithKinect01App : public AppBasic 
@@ -74,11 +108,11 @@ class CinderWithKinect01App : public AppBasic
 };
 
 // Kinect image size
-const Vec2i	kKinectSize( 640, 480 );
+const Vec2i	kKinectSize( 525, 700 );
 
 void CinderWithKinect01App::prepareSettings( Settings *settings )
 {
-	settings->setWindowSize(640,480);
+	settings->setWindowSize(525,700);
 	settings->setFrameRate(60.0f);
 }
 
@@ -120,7 +154,7 @@ void CinderWithKinect01App::setup()
 	mCallbackColorId = mKinect->addColorCallback(&CinderWithKinect01App::onColorData, this);
 
 	// Set up camera
-	mCamera.lookAt(Vec3f(0.0f, 0.5f, 6.0f), Vec3f::zero());
+	mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
 }
 
@@ -353,15 +387,14 @@ void CinderWithKinect01App::updateBacteria(){
 		Bacteria newBac = Bacteria();
 		bacterias.push_back(newBac);
 		bacteriaTimeCount = 0;
+		bacteriaBornTime = rand() % 20 + 30;
 	}
 
 	bacteriaTimeCount++;
-
 	for (int i = 0; i < bacterias.size(); i++){
-		float z = bacterias[i].position.z;
-		bacterias[i].position.z += bacterias[i].vel;
-		if (z > 0.0f){
-			//bacterias.erase(std::find(bacterias.begin(), bacterias.end(), bacterias[i]));
+		bacterias[i].updatePostiion();
+		if (bacterias[i].isOutOfBound){
+			bacterias.erase(bacterias.cbegin());
 		}
 	}
 }
@@ -369,14 +402,13 @@ void CinderWithKinect01App::updateBacteria(){
 void CinderWithKinect01App::drawBacteria(){
 	// Set up 3D view
 	gl::setMatrices(mCamera);
-	gl::translate(0.0f, 2.0f, 0.0f);
+	gl::translate(0.0f, 0.0f, 0.0f);
 
 	// Move skeletons down below the rest of the interface
 	gl::pushMatrices();
 
 	for (int i = 0; i < bacterias.size(); i++){
-		gl::color(ColorAf::white());
-		gl::drawSphere(bacterias[i].position, 0.05f, 10);
+		bacterias[i].draw();
 	}
 
 
