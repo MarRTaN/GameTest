@@ -14,7 +14,8 @@ int	Stage::getStage(){
 	return stageNum;
 }
 
-void Stage::updateStage(){
+void Stage::updateStage(Vec3f pos){
+	handPos = pos;
 	//update stage 0
 	if (stageNum == 0){
 
@@ -45,6 +46,7 @@ void Stage::drawStage(){
 
 		gl::color(Color(1.0f, 0.0f, 0.0f));
 		gl::drawSolidRect(Rectf(0.0f, 0.0f, getWindowWidth(), getWindowHeight()));
+
 	}
 	//draw stage 1
 	else if (stageNum == 1){

@@ -148,11 +148,11 @@ void CinderWithKinect01App::update()
 	// Device is capturing
 	if ( mKinect->isCapturing() ) {
 		mKinect->update();
-		stage.updateStage();
+		updatePlayer();
+		stage.updateStage(player.Pos);
 		if (stage.getStage() == 1){
 			updateBacteria();
 		}
-		updatePlayer();
 	} 
 	else {
 		// If Kinect initialization failed, try again every 90 frames
@@ -173,7 +173,12 @@ void CinderWithKinect01App::updateBacteria(){
 
 	bacteriaTimeCount++;
 	for (int i = 0; i < bacterias.size(); i++){
-		if (hit){
+		float hitRange = 0.1f;
+		Vec3f pl = player.Pos;
+		Vec3f ba = bacterias[i].position;
+
+		//Check Baacteria Hit
+		if (abs(pl.x - ba.x) < hitRange && abs(pl.y - ba.y) < hitRange && ba.z > -0.1f){
 			stage.score++;
 			bacterias[i].isHit = true;
 			hit = false;
