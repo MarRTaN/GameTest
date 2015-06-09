@@ -19,6 +19,12 @@
     <Filter Include="blocks\Cinder-KinectSdk">
       <UniqueIdentifier>{33a40357-ac83-4061-af8c-c24bb6bd7f47}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Bacteria">
+      <UniqueIdentifier>{88be318c-e8b9-4d20-bda7-c1813ed88881}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Stage">
+      <UniqueIdentifier>{8b7a1261-466a-4876-8716-d7fab9dfb8dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\CinderWithKinect01App.cpp">
@@ -29,6 +35,12 @@
     </ClCompile>
     <ClCompile Include="..\src\Kinect.cpp">
       <Filter>blocks\Cinder-KinectSdk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Bacteria.cpp">
+      <Filter>Source Files\Bacteria</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Stage.cpp">
+      <Filter>Source Files\Stage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -46,6 +58,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h">
       <Filter>blocks\Cinder-KinectSdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Bacteria.h">
+      <Filter>Source Files\Bacteria</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Stage.h">
+      <Filter>Source Files\Stage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

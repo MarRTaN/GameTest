@@ -4,6 +4,8 @@
 #include "cinder/gl/Texture.h"
 #include "cinder/app/AppNative.h"
 #include "Kinect.h"
+#include "Bacteria.h"
+#include "Stage.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -15,62 +17,6 @@ int posYRange = 2; //Range -2 to 2
 int bacteriaBornTime = 40;
 int bacteriaTimeCount = 0;
 bool hit = false;
-
-class Bacteria{
-	public:
-		Vec3f	position;
-		float	vel = 0.05f;
-		float	bacteriaSize = 0.05f;
-		float	splitAngle = 0.0f;
-		bool	isHit = false;
-		bool	isOutOfBound = false;
-		Bacteria(){
-			//initial bacteria position
-			position.x = static_cast <float> ((rand()) / static_cast <float> (RAND_MAX)*0.3) - 0.15f;
-			position.y = static_cast <float> ((rand()) / static_cast <float> (RAND_MAX)*0.1) - 0.05f;
-			position.z = -3.0f;
-		}
-		void updatePosition(){
-			//update z
-			float z = position.z;
-			position.z += vel;
-			if (position.z > 1.0f){
-				isOutOfBound = true;
-			}
-		}
-		void draw(){
-			gl::color(ColorAf::white());
-			if (!isHit){
-				gl::drawSphere(position, bacteriaSize, 10);
-			} else {
-				bacteriaSize = bacteriaSize / 1.5;
-
-				//draw split
-				float x, y, z;
-				x = (cos(splitAngle + (rand() % 80))*0.05f) + position.x;
-				y = (sin(splitAngle + (rand() % 80))*0.05f) + position.y;
-				z = position.z + vel / (rand() % 4 + 2);
-				gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
-
-				x = (cos(splitAngle + (rand() % 80 + 90.0f))*0.05f) + position.x;
-				y = (sin(splitAngle + (rand() % 80 + 90.0f))*0.05f) + position.y;
-				z = position.z + vel / (rand() % 4 + 2);
-				gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
-
-				x = (cos(splitAngle + (rand() % 80 + 180.0f))*0.05f) + position.x;
-				y = (sin(splitAngle + (rand() % 80 + 180.0f))*0.05f) + position.y;
-				z = position.z + vel / (rand() % 4 + 2);
-				gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
-
-				x = (cos(splitAngle + (rand() % 80 + 135.0f))*0.025f) + position.x;
-				y = (sin(splitAngle + (rand() % 80 + 135.0f))*0.025f) + position.y;
-				z = position.z + vel / (rand() % 4 + 2);
-				gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
-
-				splitAngle += 0.1f;
-			}
-		}
-};
 
 class CinderWithKinect01App : public AppBasic 
 {
@@ -114,14 +60,17 @@ class CinderWithKinect01App : public AppBasic
 	//Bacteria
 	vector<Bacteria>					bacterias;
 
+	//Stage
+	Stage								stage;
+
 };
 
 // Kinect image size
-const Vec2i	kKinectSize( 525, 700 );
+const Vec2i	kKinectSize( 454, 750 );
 
 void CinderWithKinect01App::prepareSettings( Settings *settings )
 {
-	settings->setWindowSize(525,700);
+	settings->setWindowSize(454, 750);
 	settings->setFrameRate(60.0f);
 }
 
@@ -171,9 +120,11 @@ void CinderWithKinect01App::update()
 {
 	// Device is capturing
 	if ( mKinect->isCapturing() ) {
-		mKinect->update();		
-		updateBacteria();
-		///test
+		mKinect->update();
+		stage.updateStage();
+		if (stage.getStage() == 1){
+			updateBacteria();
+		}
 	} 
 	else {
 		// If Kinect initialization failed, try again every 90 frames
@@ -402,6 +353,7 @@ void CinderWithKinect01App::updateBacteria(){
 	bacteriaTimeCount++;
 	for (int i = 0; i < bacterias.size(); i++){
 		if (hit){
+			stage.score++;
 			bacterias[i].isHit = true;
 			hit = false;
 		}
@@ -439,23 +391,8 @@ void CinderWithKinect01App::draw()
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
 
-		// Draw depth and color textures
-		/*gl::color(Colorf::white());
-		if (mColorSurface) {
-			Area srcArea(0, 0, mColorSurface.getWidth(), mColorSurface.getHeight());
-			Rectf destRect(0.0f, 0.0f, getWindowWidth(), getWindowHeight());
-			gl::draw(gl::Texture(mColorSurface), srcArea, destRect);
-		}*/
-		/*gl::color(Colorf::white());
-		if (mDepthSurface) {
-		Area srcArea(0, 0, mDepthSurface.getWidth(), mDepthSurface.getHeight());
-		Rectf destRect(0.0f, 0.0f, getWindowWidth(), getWindowHeight());
-		gl::draw(gl::Texture(mDepthSurface), srcArea, destRect);
-		console() << mDepthSurface.getChannelAlpha() << std::endl;
-		}*/
-
-		//drawNearestHand();
-		drawBacteria();
+		stage.drawStage();
+		if(stage.getStage() == 1) drawBacteria();
 	}
 }
 
@@ -472,6 +409,9 @@ void CinderWithKinect01App::keyDown( KeyEvent event )
 		break;
 		case KeyEvent::KEY_a:
 			hit = true;
+		break;
+		case KeyEvent::KEY_s:
+			stage.nextStage();
 		break;
 	}
 }
