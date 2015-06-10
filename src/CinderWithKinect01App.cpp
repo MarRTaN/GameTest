@@ -4,6 +4,7 @@
 #include "cinder/gl/Texture.h"
 #include "cinder/app/AppNative.h"
 #include <math.h>
+#include "cinder/ImageIo.h"
 #include "Kinect.h"
 #include "Bacteria.h"
 #include "Stage.h"
@@ -291,18 +292,28 @@ void CinderWithKinect01App::drawPlayer(){
 
 	gl::pushMatrices();
 
-	Rectf		arm(-getWindowWidth() * 2 / 5, -getWindowHeight() / 5, getWindowWidth() * 2 / 5, getWindowHeight() / 5);
+	gl::color(1.0f, 1.0f, 1.0f);
+	//gl::drawSolidRect(arm);
 
-	gl::translate(getWindowWidth() / 2, getWindowHeight());
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	Surface8u surface(loadImage(loadAsset("arm.png")));
+	gl::Texture armTexture = gl::Texture(surface);
+
+	//Rectf		arm(-getWindowWidth() * 2 / 5, -getWindowHeight() / 5, getWindowWidth() * 2 / 5, getWindowHeight() / 5);
+	
+	gl::translate(getWindowWidth() / 2, getWindowHeight() - 30.0f);
+
+	float rotRate = 0.6f;
+	float transDivider = 100.0f;
 	
 	switch (player.gestureId){
 	///TURN LEFT 
 	case 1: if (player.transTemp > -getWindowHeight() / 20.0f){
-				player.transTemp -= getWindowHeight() / 500.0f;
+				player.transTemp -= getWindowHeight() / transDivider;
 			}
-
 			if (player.rotTemp > -15.0f) {
-				player.rotTemp -= 0.3f;
+				player.rotTemp -= rotRate;
 			}
 
 			gl::translate(0.0f, player.transTemp);
@@ -310,21 +321,21 @@ void CinderWithKinect01App::drawPlayer(){
 			break;
 	///TURN RIGHT
 	case 2: if (player.transTemp > -getWindowHeight() / 20.0f) {
-				player.transTemp -= getWindowHeight() / 500.0f;
+				player.transTemp -= getWindowHeight() / transDivider;
 			}
 			if (player.rotTemp < 15.0f) {
-				player.rotTemp += 0.3f;
+				player.rotTemp += rotRate;
 			}
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
 			break;
 	///UP LEFT
 	case 3: if (player.transTemp > -getWindowHeight() / 20.0f){
-				player.transTemp -= getWindowHeight() / 500.0f;
+				player.transTemp -= getWindowHeight() / transDivider;
 			}
 
 			if (player.rotTemp > -15.0f) {
-				player.rotTemp -= 0.3f;
+				player.rotTemp -= rotRate;
 			}
 
 			gl::translate(0.0f, player.transTemp);
@@ -332,45 +343,52 @@ void CinderWithKinect01App::drawPlayer(){
 			break;
 	///UP RIGHT
 	case 4: if (player.transTemp > -getWindowHeight() / 20.0f) {
-				player.transTemp -= getWindowHeight() / 500.0f;
+				player.transTemp -= getWindowHeight() / transDivider;
 			}
 			if (player.rotTemp < 15.0f) {
-				player.rotTemp += 0.3f;
+				player.rotTemp += rotRate;
 			}
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
 			break;
 	///UP
-	case 5: if (player.rotTemp > 0.0f) player.rotTemp -= 0.3f;
-			else player.rotTemp += 0.3f;
+	case 5: if (player.rotTemp > 0.0f) {
+				player.rotTemp -= rotRate;
+				if (player.rotTemp < 0.0f) player.rotTemp = 0;
+			}
+			else if (player.rotTemp < 0.0f){
+				player.rotTemp += rotRate;
+				if (player.rotTemp > 0.0f) player.rotTemp = 0;
+			}
+
 			if (player.transTemp > -getWindowHeight() / 20.0f){
-				player.transTemp -= getWindowHeight() / 500.0f;
+				player.transTemp -= getWindowHeight() / transDivider;
 			}
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
 			break;
 	///DOWN LEFT
 	case 6: if (player.rotTemp > -10.0f) {
-				player.rotTemp -= 0.3f;
+				player.rotTemp -= rotRate;
 			}
 			gl::rotate(player.rotTemp);
 			if (player.transTemp < 0.0f){
-				player.transTemp += getWindowHeight() / 500.0f;
+				player.transTemp += getWindowHeight() / transDivider;
 			}
-			else player.transTemp -= getWindowHeight() / 500.0f;
+			else player.transTemp -= getWindowHeight() / transDivider;
 
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
 			break; 
 	///DOWN RIGHT
 	case 7: if (player.rotTemp < 10.0f) {
-				player.rotTemp += 0.3f;
+				player.rotTemp += rotRate;
 			}
 			gl::rotate(player.rotTemp);
 			if (player.transTemp < 0.0f){
-				player.transTemp += getWindowHeight() / 500.0f;
+				player.transTemp += getWindowHeight() / transDivider;
 			}
-			else player.transTemp -= getWindowHeight() / 500.0f;
+			else player.transTemp -= getWindowHeight() / transDivider;
 
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
@@ -379,23 +397,29 @@ void CinderWithKinect01App::drawPlayer(){
 	///DOWN
 	case 0: //player.rotTemp = 0.0f; player.transTemp = 0.0f;
 			if (player.rotTemp > 0.0f) {
-				player.rotTemp -= 0.3f;
+				player.rotTemp -= rotRate;
+				if (player.rotTemp < 0.0f) player.rotTemp = 0;
 			}
-			else {
-				player.rotTemp += 0.3f;
+			else if(player.rotTemp < 0.0f){
+				player.rotTemp += rotRate;
+				if (player.rotTemp > 0.0f) player.rotTemp = 0;
 			}
+
 			if (player.transTemp < 0.0f){
-				player.transTemp += getWindowHeight() / 500.0f;
+				player.transTemp += getWindowHeight() / transDivider;
+				if (player.transTemp > 0.0f) player.transTemp = 0; 
 			}
-			else player.transTemp -= getWindowHeight() / 500.0f;
+			else if(player.transTemp > 0.0f){
+				player.transTemp -= getWindowHeight() / transDivider;
+				if (player.transTemp < 0.0f) player.transTemp = 0; 
+			}
 			
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
 			break;
-			
 	}
-	gl::color(0.1f, 0.3f, 0.5f);
-	gl::drawSolidRect(arm);
+	gl::draw(armTexture, Rectf(-armTexture.getWidth() / 2, -armTexture.getHeight() / 2, armTexture.getWidth() / 2, armTexture.getHeight() / 2));
+	glDisable(GL_BLEND);
 	gl::popMatrices();
 
 }
