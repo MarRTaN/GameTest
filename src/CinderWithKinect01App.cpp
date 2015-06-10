@@ -295,16 +295,79 @@ void CinderWithKinect01App::drawPlayer(){
 
 	gl::translate(getWindowWidth() / 2, getWindowHeight());
 
+	//if (player.gestureId != player.lastGestureId){ player.rotTemp = 0; player.transTemp = 0; }
+
 	switch (player.gestureId){
-		case 1: gl::rotate(-30.0f); break;
-		case 2: gl::rotate(30.0f); break;
-		case 3: gl::translate(0.0f, -getWindowHeight() / 10); gl::rotate(-15.0f); break;
-		case 4: gl::translate(0.0f, -getWindowHeight() / 10); gl::rotate(15.0f); break;
-		case 5: gl::translate(0.0f, -getWindowHeight() / 10); break;
-		case 6: gl::rotate(-10.0f); break; //gl::translate(0.0f, getWindowHeight() / 10); gl::rotate(-10.0f);  break;
-		case 7: gl::rotate(10.0f); break;//gl::translate(0.0f, getWindowHeight() / 10);  gl::rotate(10.0f);  break;
-		case 0: break;//gl::translate(0.0f, getWindowHeight()/ 10, 0.0f); break;
+	///TURN LEFT 
+	case 1: if (player.rotTemp > -30.0f) {
+				player.rotTemp -= 3;
+			}
+			gl::rotate(player.rotTemp);
+			break;
+	///TURN RIGHT
+	case 2: if (player.rotTemp < 30.0f) {
+			player.rotTemp += 3;
+			}
+			gl::rotate(player.rotTemp); 
+			break;
+	///UP LEFT
+	case 3: if (player.transTemp > -getWindowHeight() / 10){
+				player.transTemp -= getWindowHeight() / 50;
+			}
+
+			if (player.rotTemp > -15.0f) {
+				player.rotTemp -= 2;
+			}
+
+			gl::translate(0.0f, player.transTemp);
+			gl::rotate(player.rotTemp);
+			break;
+	///UP RIGHT
+	case 4: if (player.transTemp > -getWindowHeight() / 10) {
+				player.transTemp -= getWindowHeight() / 50;
+			}
+			if (player.rotTemp < 15.0f) {
+				player.rotTemp += 2;
+			}
+			gl::translate(0.0f, player.transTemp);
+			gl::rotate(player.rotTemp);
+			break;
+	///UP
+	case 5: if (player.rotTemp > 0.0f) player.rotTemp -= 2.0f;
+			else player.rotTemp += 2.0f;
+			if (player.transTemp > -getWindowHeight() / 10){
+				player.transTemp -= getWindowHeight() / 50;
+			}
+			gl::translate(0.0f, player.transTemp);
+			gl::rotate(player.rotTemp);
+			break;
+	///DOWN LEFT
+	case 6: if (player.rotTemp > -10.0f) {
+				player.rotTemp -= 1;
+			}
+			gl::rotate(player.rotTemp);
+			break; //gl::translate(0.0f, getWindowHeight() / 10); gl::rotate(-10.0f);  break;
+	///DOWN RIGHT
+	case 7: if (player.rotTemp < 10.0f) {
+				player.rotTemp += 1;
+			}
+			gl::rotate(player.rotTemp);
+			break;//gl::translate(0.0f, getWindowHeight() / 10);  gl::rotate(10.0f);  break;
+	///DOWN
+	case 0:	player.rotTemp = 0.0f; player.transTemp = 0.0f;
+			/*if (player.rotTemp > 0.0f) player.rotTemp -= 2.0f;
+			else player.rotTemp += 2.0f;
+			if (player.transTemp < getWindowHeight() ){
+				player.transTemp += getWindowHeight() / 10;
+			}
+			gl::translate(0.0f, player.transTemp);
+			gl::rotate(player.rotTemp);
+			*/
+			break;//gl::translate(0.0f, getWindowHeight()/ 10, 0.0f); break;
+			
 	}
+
+	player.lastGestureId = player.gestureId;
 
 	gl::color(0.1f, 0.3f, 0.5f);
 	gl::drawSolidRect(arm);

@@ -40,52 +40,53 @@ int Player::getGesture(vector<Skeleton> mSkeletons){
 		}
 		if (handLeftPos.x < handRightPos.x &&
 		handRightPos.y > elbowRightPos.y && elbowRightPos.y > centerPos.y && elbowLeftPos.y > handLeftPos.y){
-		console() << "TURN LEFT" << endl;
+		//console() << "TURN LEFT" << endl;
 		gestureId = 1; ///TURN LEFT
 	}
 		else if (handLeftPos.x < handRightPos.x &&
 			handLeftPos.y > elbowLeftPos.y && elbowLeftPos.y > centerPos.y && elbowRightPos.y > handRightPos.y){
-			console() << "TURN RIGHT" << endl;
+			//console() << "TURN RIGHT" << endl;
 			gestureId = 2; ///TURN RIGHT
 		}
 
 		else if (handLeftPos.x < elbowLeftPos.x && handRightPos.x < elbowRightPos.x &&
 			handLeftPos.y > elbowLeftPos.y && handLeftPos.y > centerPos.y &&
 			handRightPos.y > elbowRightPos.y && handRightPos.y > centerPos.y){
-			console() << "UP LEFT" << endl;
+			//console() << "UP LEFT" << endl;
 			gestureId = 3; /// UP LEFT
 		}
 
 		else if (elbowLeftPos.x < handLeftPos.x && elbowRightPos.x < handRightPos.x &&
 			handLeftPos.y > elbowLeftPos.y && handLeftPos.y > centerPos.y &&
 			handRightPos.y > elbowRightPos.y && handRightPos.y > centerPos.y){
-			console() << "UP RIGHT" << endl;
+			//console() << "UP RIGHT" << endl;
 			gestureId = 4; /// UP RIGHT
 		}
 		else if (handLeftPos.x < centerPos.x && centerPos.x < handRightPos.x &&
 			handLeftPos.y > elbowLeftPos.y && elbowLeftPos.y > centerPos.y &&
 			handRightPos.y > elbowRightPos.y && elbowRightPos.y > centerPos.y){
-			console() << "UP" << endl;
+			//console() << "UP" << endl;
 			gestureId = 5; /// UP STRAIGHT
 		}
 		else if (handLeftPos.x < handRightPos.x && handRightPos.x < centerPos.x &&
 			handLeftPos.y < elbowLeftPos.y && elbowLeftPos.y < centerPos.y &&
 			handRightPos.y < elbowRightPos.y && elbowRightPos.y < centerPos.y){
-			console() << "DOWN LEFT" << endl;
+			//console() << "DOWN LEFT" << endl;
 			gestureId = 6; /// DOWN LEFT
 		}
 
 		else if (centerPos.x < handLeftPos.x && handLeftPos.x < handRightPos.x &&
 			handLeftPos.y < elbowLeftPos.y && elbowLeftPos.y < centerPos.y &&
 			handRightPos.y < elbowRightPos.y && elbowRightPos.y < centerPos.y){
-			console() << "DOWN RIGHT" << endl;
+			//console() << "DOWN RIGHT" << endl;
 			gestureId = 7; /// DOWN RIGHT
 		}
 		else{
-			console() << "DOWN" << endl;
+			//console() << "DOWN" << endl;
 			gestureId = 0; /// DOWN
 		}
 	}
+
 	return gestureId;
 }
 

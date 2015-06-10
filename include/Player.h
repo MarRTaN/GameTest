@@ -18,6 +18,7 @@ public:
 	Player();
 
 	int			gestureId;
+	int			lastGestureId;
 	Skeleton	playerSkel;
 	Vec3f		Pos;
 	Vec3f		Vel;
@@ -25,6 +26,8 @@ public:
 	Vec3f		handLeftPos, handRightPos, elbowLeftPos, elbowRightPos, centerPos;
 	float		angle;
 	bool		isTrackedSkeleton;
+	float		rotTemp;
+	float		transTemp;
 
 	int			getGesture(vector<Skeleton> mSkeletons);
 	bool		isTracked();
