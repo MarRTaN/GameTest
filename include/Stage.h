@@ -7,6 +7,9 @@
 #include "cinder/gl/gl.h"
 #include "cinder/app/AppBasic.h"
 #include "cinder/app/AppNative.h"
+#include "cinder/ImageIo.h"
+#include "cinder/gl/Texture.h"
+#include "cinder/gl/TextureFont.h"
 
 using namespace ci;
 
@@ -15,7 +18,10 @@ class Stage{
 		int						timer = 0;
 		int						score = 0;
 		ci::CameraPersp			sCamera;
+		gl::Texture				stageTexture;
+		gl::Texture				handTexture;
 
+		void					setup();
 		void					nextStage();
 		void					updateStage(Vec3f pos, ci::CameraPersp cam);
 		void					drawStage();

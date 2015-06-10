@@ -143,6 +143,7 @@ void CinderWithKinect01App::setup()
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
 
 	player.Pos = Vec3f(0, -0.2f, 1.0f);
+	stage.setup();
 }
 
 void CinderWithKinect01App::update()
@@ -151,7 +152,11 @@ void CinderWithKinect01App::update()
 	if ( mKinect->isCapturing() ) {
 		mKinect->update();
 		updatePlayer();
+
+		//check hand and update stage
 		stage.updateStage(player.handRightPos, mCamera);
+
+		//Update bacteria & camera
 		if (stage.getStage() == 1){
 			updateBacteria();
 		}
@@ -297,48 +302,48 @@ void CinderWithKinect01App::getGesture(){
 
 		if (player.handLeftPos.x < player.handRightPos.x &&
 			player.handLeftPos.y > player.elbowLeftPos.y && player.elbowLeftPos.y > player.centerPos.y && player.elbowRightPos.y > player.handRightPos.y){
-			console() << "TURN LEFT" << endl;
+			//console() << "TURN LEFT" << endl;
 			player.gestureId = 1; ///TURN LEFT
 		}
 		else if (player.handLeftPos.x < player.handRightPos.x &&
 			player.handRightPos.y > player.elbowRightPos.y && player.elbowRightPos.y > player.centerPos.y && player.elbowLeftPos.y > player.handLeftPos.y){
-			console() << "TURN RIGHT" << endl;
+			//console() << "TURN RIGHT" << endl;
 			player.gestureId = 2; ///TURN RIGHT
 		}
 		else if (player.handLeftPos.x < player.elbowLeftPos.x && player.handRightPos.x < player.elbowRightPos.x && 
 			player.handLeftPos.y > player.elbowLeftPos.y && player.	handLeftPos.y > player.centerPos.y &&
 			player.handRightPos.y > player.elbowRightPos.y && player.handRightPos.y > player.centerPos.y){
-			console() << "UP LEFT" << endl;
+			//console() << "UP LEFT" << endl;
 			player.gestureId = 3; /// UP LEFT
 		}
 
 		else if (player.elbowLeftPos.x < player.handLeftPos.x && player.elbowRightPos.x < player.handRightPos.x &&
 			player.handLeftPos.y > player.elbowLeftPos.y && player.handLeftPos.y > player.centerPos.y &&
 			player.handRightPos.y > player.elbowRightPos.y && player.handRightPos.y > player.centerPos.y){
-			console() << "UP RIGHT" << endl;
+			//console() << "UP RIGHT" << endl;
 			player.gestureId = 4; /// UP RIGHT
 		}
 		else if (player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x &&
 			player.handLeftPos.y > player.elbowLeftPos.y && player.elbowLeftPos.y > player.centerPos.y &&
 			player.handRightPos.y > player.elbowRightPos.y && player.elbowRightPos.y > player.centerPos.y){
-			console() << "UP" << endl;
+			//console() << "UP" << endl;
 			player.gestureId = 5; /// UP STRAIGHT
 		}
 		else if (player.handLeftPos.x < player.handRightPos.x && player.handRightPos.x < player.centerPos.x &&
 			player.handLeftPos.y < player.elbowLeftPos.y && player.elbowLeftPos.y < player.centerPos.y &&
 			player.handRightPos.y < player.elbowRightPos.y && player.elbowRightPos.y < player.centerPos.y){
-			console() << "DOWN LEFT" << endl;
+			//console() << "DOWN LEFT" << endl;
 			player.gestureId = 6; /// DOWN LEFT
 		}
 
 		else if (player.centerPos.x < player.handLeftPos.x && player.handLeftPos.x < player.handRightPos.x &&
 			player.handLeftPos.y < player.elbowLeftPos.y && player.elbowLeftPos.y < player.centerPos.y &&
 			player.handRightPos.y < player.elbowRightPos.y && player.elbowRightPos.y < player.centerPos.y){
-			console() << "DOWN RIGHT" << endl;
+			//console() << "DOWN RIGHT" << endl;
 			player.gestureId = 7; /// DOWN RIGHT
 		}
 		else{
-			console() << "DOWN" << endl;
+			//console() << "DOWN" << endl;
 			player.gestureId = 0; /// DOWN
 		}
 	}
