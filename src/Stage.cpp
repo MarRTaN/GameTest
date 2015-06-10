@@ -39,7 +39,7 @@ void Stage::updateStage(Vec3f pos, ci::CameraPersp cam){
 	//update stage 2
 	else if (stageNum == 2){
 		timer++;
-		if (timer > 10.0f*60.0f) nextStage();
+		if (timer > 2.0f*60.0f) nextStage();
 	}
 	/*//update stage 3
 	else if (stageNum == 3){
