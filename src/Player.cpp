@@ -38,17 +38,17 @@ int Player::getGesture(vector<Skeleton> mSkeletons){
 			else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_RIGHT) elbowRightPos = boneIt->second.getPosition();
 			else if (boneIt->first == NUI_SKELETON_POSITION_SHOULDER_CENTER) centerPos = boneIt->second.getPosition();
 		}
-		
 		if (handLeftPos.x < handRightPos.x &&
-			handLeftPos.y > elbowLeftPos.y && elbowLeftPos.y > centerPos.y && elbowRightPos.y > handRightPos.y){
-			console() << "TURN LEFT" << endl;
-			gestureId = 1; ///TURN LEFT
-		}
+		handRightPos.y > elbowRightPos.y && elbowRightPos.y > centerPos.y && elbowLeftPos.y > handLeftPos.y){
+		console() << "TURN LEFT" << endl;
+		gestureId = 1; ///TURN LEFT
+	}
 		else if (handLeftPos.x < handRightPos.x &&
-			handRightPos.y > elbowRightPos.y && elbowRightPos.y > centerPos.y && elbowLeftPos.y > handLeftPos.y){
+			handLeftPos.y > elbowLeftPos.y && elbowLeftPos.y > centerPos.y && elbowRightPos.y > handRightPos.y){
 			console() << "TURN RIGHT" << endl;
 			gestureId = 2; ///TURN RIGHT
 		}
+
 		else if (handLeftPos.x < elbowLeftPos.x && handRightPos.x < elbowRightPos.x &&
 			handLeftPos.y > elbowLeftPos.y && handLeftPos.y > centerPos.y &&
 			handRightPos.y > elbowRightPos.y && handRightPos.y > centerPos.y){

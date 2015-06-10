@@ -25,8 +25,10 @@ public:
 	Vec3f		handLeftPos, handRightPos, elbowLeftPos, elbowRightPos, centerPos;
 	float		angle;
 	bool		isTrackedSkeleton;
-	int getGesture(vector<Skeleton> mSkeletons);
-	bool isTracked();
+
+	int			getGesture(vector<Skeleton> mSkeletons);
+	bool		isTracked();
+	void		createDummy();
 };
 
 #endif

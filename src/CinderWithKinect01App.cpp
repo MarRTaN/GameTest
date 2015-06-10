@@ -126,7 +126,6 @@ void CinderWithKinect01App::setup()
 	// Set up camera
 	mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
-
 	player.Pos = Vec3f(0, -0.2f, 1.0f);
 }
 
@@ -206,7 +205,6 @@ void CinderWithKinect01App::updateBacteria(){
 void CinderWithKinect01App::drawBacteria(){
 	// Set up 3D view
 	gl::setMatrices(mCamera);
-	gl::translate(0.0f, 0.0f, 0.0f);
 
 	// Move skeletons down below the rest of the interface
 	gl::pushMatrices();
@@ -240,12 +238,12 @@ void CinderWithKinect01App::updatePlayer(){
 	/// UPDATE VELOCITY ///
 	switch (player.gestureId) {
 		/// TURN LEFT
-		case 1: player.Vel.x += player.Acc;
+		case 1: player.Vel.x -= player.Acc;
 			if (player.Vel.y > 0.0f) player.Vel.y -= player.Acc;
 			else  player.Vel.y += player.Acc;
 			break;
-			/// TURN RIGHT
-		case 2: player.Vel.x -= player.Acc;
+		/// TURN RIGHT
+		case 2: player.Vel.x += player.Acc;
 			if (player.Vel.y > 0.0f) player.Vel.y -= player.Acc;
 			else  player.Vel.y += player.Acc;
 			break;
@@ -288,7 +286,31 @@ void CinderWithKinect01App::updatePlayer(){
 }
 
 void CinderWithKinect01App::drawPlayer(){
+
 	mCamera.lookAt(player.Pos, Vec3f(player.Pos.x, player.Pos.y, -3.0f));
+
+	gl::pushMatrices();
+
+	Rectf		arm(-getWindowWidth() * 2 / 5, -getWindowHeight() / 5, getWindowWidth() * 2 / 5, getWindowHeight() / 5);
+
+	gl::translate(getWindowWidth() / 2, getWindowHeight());
+
+	switch (player.gestureId){
+		case 1: gl::rotate(-30.0f); break;
+		case 2: gl::rotate(30.0f); break;
+		case 3: gl::translate(0.0f, -getWindowHeight() / 10); gl::rotate(-15.0f); break;
+		case 4: gl::translate(0.0f, -getWindowHeight() / 10); gl::rotate(15.0f); break;
+		case 5: gl::translate(0.0f, -getWindowHeight() / 10); break;
+		case 6: gl::rotate(-10.0f); break; //gl::translate(0.0f, getWindowHeight() / 10); gl::rotate(-10.0f);  break;
+		case 7: gl::rotate(10.0f); break;//gl::translate(0.0f, getWindowHeight() / 10);  gl::rotate(10.0f);  break;
+		case 0: break;//gl::translate(0.0f, getWindowHeight()/ 10, 0.0f); break;
+	}
+
+	gl::color(0.1f, 0.3f, 0.5f);
+	gl::drawSolidRect(arm);
+
+	gl::popMatrices();
+
 }
 
 void CinderWithKinect01App::keyDown(KeyEvent event)
