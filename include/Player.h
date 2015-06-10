@@ -26,8 +26,8 @@ public:
 	Vec3f		handLeftPos, handRightPos, elbowLeftPos, elbowRightPos, centerPos;
 	float		angle;
 	bool		isTrackedSkeleton;
-	float		rotTemp;
-	float		transTemp;
+	float		rotTemp=0.0f;
+	float		transTemp=0.0f;
 
 	int			getGesture(vector<Skeleton> mSkeletons);
 	bool		isTracked();

@@ -190,7 +190,7 @@ void CinderWithKinect01App::updateBacteria(){
 		Vec3f ba = bacterias[i].position;
 
 		//Check Baacteria Hit
-		if (abs(pl.x - ba.x) < hitRangeX && abs(pl.y - ba.y) < hitRangeY && ba.z > 0.05f && ba.z < 0.1f){
+		if (abs(pl.x - ba.x) < hitRangeX && abs(pl.y - 0.1f - ba.y) < hitRangeY && ba.z > 0.05f && ba.z < 0.1f){
 			stage.score++;
 			bacterias[i].isHit = true;
 			hit = false;
@@ -294,84 +294,108 @@ void CinderWithKinect01App::drawPlayer(){
 	Rectf		arm(-getWindowWidth() * 2 / 5, -getWindowHeight() / 5, getWindowWidth() * 2 / 5, getWindowHeight() / 5);
 
 	gl::translate(getWindowWidth() / 2, getWindowHeight());
-
-	//if (player.gestureId != player.lastGestureId){ player.rotTemp = 0; player.transTemp = 0; }
-
+	
 	switch (player.gestureId){
 	///TURN LEFT 
-	case 1: if (player.rotTemp > -30.0f) {
-				player.rotTemp -= 3;
-			}
-			gl::rotate(player.rotTemp);
-			break;
-	///TURN RIGHT
-	case 2: if (player.rotTemp < 30.0f) {
-			player.rotTemp += 3;
-			}
-			gl::rotate(player.rotTemp); 
-			break;
-	///UP LEFT
-	case 3: if (player.transTemp > -getWindowHeight() / 10){
-				player.transTemp -= getWindowHeight() / 50;
+	case 1: if (player.transTemp > -getWindowHeight() / 20.0f){
+				player.transTemp -= getWindowHeight() / 500.0f;
 			}
 
 			if (player.rotTemp > -15.0f) {
-				player.rotTemp -= 2;
+				player.rotTemp -= 0.3f;
+			}
+
+			gl::translate(0.0f, player.transTemp);
+			gl::rotate(player.rotTemp);
+			break;
+	///TURN RIGHT
+	case 2: if (player.transTemp > -getWindowHeight() / 20.0f) {
+				player.transTemp -= getWindowHeight() / 500.0f;
+			}
+			if (player.rotTemp < 15.0f) {
+				player.rotTemp += 0.3f;
+			}
+			gl::translate(0.0f, player.transTemp);
+			gl::rotate(player.rotTemp);
+			break;
+	///UP LEFT
+	case 3: if (player.transTemp > -getWindowHeight() / 20.0f){
+				player.transTemp -= getWindowHeight() / 500.0f;
+			}
+
+			if (player.rotTemp > -15.0f) {
+				player.rotTemp -= 0.3f;
 			}
 
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
 			break;
 	///UP RIGHT
-	case 4: if (player.transTemp > -getWindowHeight() / 10) {
-				player.transTemp -= getWindowHeight() / 50;
+	case 4: if (player.transTemp > -getWindowHeight() / 20.0f) {
+				player.transTemp -= getWindowHeight() / 500.0f;
 			}
 			if (player.rotTemp < 15.0f) {
-				player.rotTemp += 2;
+				player.rotTemp += 0.3f;
 			}
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
 			break;
 	///UP
-	case 5: if (player.rotTemp > 0.0f) player.rotTemp -= 2.0f;
-			else player.rotTemp += 2.0f;
-			if (player.transTemp > -getWindowHeight() / 10){
-				player.transTemp -= getWindowHeight() / 50;
+	case 5: if (player.rotTemp > 0.0f) player.rotTemp -= 0.3f;
+			else player.rotTemp += 0.3f;
+			if (player.transTemp > -getWindowHeight() / 20.0f){
+				player.transTemp -= getWindowHeight() / 500.0f;
 			}
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
 			break;
 	///DOWN LEFT
 	case 6: if (player.rotTemp > -10.0f) {
-				player.rotTemp -= 1;
+				player.rotTemp -= 0.3f;
 			}
 			gl::rotate(player.rotTemp);
-			break; //gl::translate(0.0f, getWindowHeight() / 10); gl::rotate(-10.0f);  break;
-	///DOWN RIGHT
-	case 7: if (player.rotTemp < 10.0f) {
-				player.rotTemp += 1;
+			if (player.transTemp < 0.0f){
+				player.transTemp += getWindowHeight() / 500.0f;
 			}
-			gl::rotate(player.rotTemp);
-			break;//gl::translate(0.0f, getWindowHeight() / 10);  gl::rotate(10.0f);  break;
-	///DOWN
-	case 0:	player.rotTemp = 0.0f; player.transTemp = 0.0f;
-			/*if (player.rotTemp > 0.0f) player.rotTemp -= 2.0f;
-			else player.rotTemp += 2.0f;
-			if (player.transTemp < getWindowHeight() ){
-				player.transTemp += getWindowHeight() / 10;
-			}
+			else player.transTemp -= getWindowHeight() / 500.0f;
+
 			gl::translate(0.0f, player.transTemp);
 			gl::rotate(player.rotTemp);
-			*/
-			break;//gl::translate(0.0f, getWindowHeight()/ 10, 0.0f); break;
+			break; 
+	///DOWN RIGHT
+	case 7: if (player.rotTemp < 10.0f) {
+				player.rotTemp += 0.3f;
+			}
+			gl::rotate(player.rotTemp);
+			if (player.transTemp < 0.0f){
+				player.transTemp += getWindowHeight() / 500.0f;
+			}
+			else player.transTemp -= getWindowHeight() / 500.0f;
+
+			gl::translate(0.0f, player.transTemp);
+			gl::rotate(player.rotTemp);
+			break;
+
+	///DOWN
+	case 0: //player.rotTemp = 0.0f; player.transTemp = 0.0f;
+			if (player.rotTemp > 0.0f) {
+				player.rotTemp -= 0.3f;
+			}
+			else {
+				player.rotTemp += 0.3f;
+			}
+			if (player.transTemp < 0.0f){
+				player.transTemp += getWindowHeight() / 500.0f;
+			}
+			else player.transTemp -= getWindowHeight() / 500.0f;
+			
+			gl::translate(0.0f, player.transTemp);
+			gl::rotate(player.rotTemp);
+			break;
 			
 	}
-
-	player.lastGestureId = player.gestureId;
-
 	gl::color(0.1f, 0.3f, 0.5f);
 	gl::drawSolidRect(arm);
-
 	gl::popMatrices();
 
 }
