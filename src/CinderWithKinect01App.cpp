@@ -81,10 +81,14 @@ class CinderWithKinect01App : public AppBasic
 
 	//Player
 	Player								player;
+	float								stillMove=0.01f;
+	int									countStillMove;
 
 	//Window
 	float								width = 0.3;
 	float								height = 0.2;
+
+
 
 };
 
@@ -286,27 +290,59 @@ void CinderWithKinect01App::getGesture(){
 		for (Skeleton::const_iterator boneIt = nearestSkeleton->cbegin(); boneIt != nearestSkeleton->cend(); ++boneIt){
 			if (boneIt->first == NUI_SKELETON_POSITION_HAND_LEFT) player.handLeftPos = boneIt->second.getPosition();
 			else if (boneIt->first == NUI_SKELETON_POSITION_HAND_RIGHT) player.handRightPos = boneIt->second.getPosition();
-			//else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_LEFT) player.elbowLeftPos = boneIt->second.getPosition();
-			//else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_RIGHT) player.elbowRightPos = boneIt->second.getPosition();
+			else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_LEFT) player.elbowLeftPos = boneIt->second.getPosition();
+			else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_RIGHT) player.elbowRightPos = boneIt->second.getPosition();
 			else if (boneIt->first == NUI_SKELETON_POSITION_SHOULDER_CENTER) player.centerPos = boneIt->second.getPosition();
 		}
 
-		if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
-			player.gestureId = 1;
+		if (player.handLeftPos.x < player.handRightPos.x &&
+			player.handLeftPos.y > player.elbowLeftPos.y && player.elbowLeftPos.y > player.centerPos.y && player.elbowRightPos.y > player.handRightPos.y){
+			console() << "TURN LEFT" << endl;
+			player.gestureId = 1; ///TURN LEFT
 		}
-		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
-			player.gestureId = 2;
+		else if (player.handLeftPos.x < player.handRightPos.x &&
+			player.handRightPos.y > player.elbowRightPos.y && player.elbowRightPos.y > player.centerPos.y && player.elbowLeftPos.y > player.handLeftPos.y){
+			console() << "TURN RIGHT" << endl;
+			player.gestureId = 2; ///TURN RIGHT
 		}
-		else if (player.handLeftPos.y > player.centerPos.y && player.centerPos.y < player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
-			player.gestureId = 3;
+		else if (player.handLeftPos.x < player.elbowLeftPos.x && player.handRightPos.x < player.elbowRightPos.x && 
+			player.handLeftPos.y > player.elbowLeftPos.y && player.	handLeftPos.y > player.centerPos.y &&
+			player.handRightPos.y > player.elbowRightPos.y && player.handRightPos.y > player.centerPos.y){
+			console() << "UP LEFT" << endl;
+			player.gestureId = 3; /// UP LEFT
 		}
-		else if (player.handLeftPos.y < player.centerPos.y && player.centerPos.y > player.handRightPos.y && player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x){
-			player.gestureId = 4;
+
+		else if (player.elbowLeftPos.x < player.handLeftPos.x && player.elbowRightPos.x < player.handRightPos.x &&
+			player.handLeftPos.y > player.elbowLeftPos.y && player.handLeftPos.y > player.centerPos.y &&
+			player.handRightPos.y > player.elbowRightPos.y && player.handRightPos.y > player.centerPos.y){
+			console() << "UP RIGHT" << endl;
+			player.gestureId = 4; /// UP RIGHT
+		}
+		else if (player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x &&
+			player.handLeftPos.y > player.elbowLeftPos.y && player.elbowLeftPos.y > player.centerPos.y &&
+			player.handRightPos.y > player.elbowRightPos.y && player.elbowRightPos.y > player.centerPos.y){
+			console() << "UP" << endl;
+			player.gestureId = 5; /// UP STRAIGHT
+		}
+		else if (player.handLeftPos.x < player.handRightPos.x && player.handRightPos.x < player.centerPos.x &&
+			player.handLeftPos.y < player.elbowLeftPos.y && player.elbowLeftPos.y < player.centerPos.y &&
+			player.handRightPos.y < player.elbowRightPos.y && player.elbowRightPos.y < player.centerPos.y){
+			console() << "DOWN LEFT" << endl;
+			player.gestureId = 6; /// DOWN LEFT
+		}
+
+		else if (player.centerPos.x < player.handLeftPos.x && player.handLeftPos.x < player.handRightPos.x &&
+			player.handLeftPos.y < player.elbowLeftPos.y && player.elbowLeftPos.y < player.centerPos.y &&
+			player.handRightPos.y < player.elbowRightPos.y && player.elbowRightPos.y < player.centerPos.y){
+			console() << "DOWN RIGHT" << endl;
+			player.gestureId = 7; /// DOWN RIGHT
 		}
 		else{
-			player.gestureId = 0;
+			console() << "DOWN" << endl;
+			player.gestureId = 0; /// DOWN
 		}
 	}
+	//console() << player.gestureId << endl;
 }
 
 void CinderWithKinect01App::updatePlayer(){
@@ -318,61 +354,85 @@ void CinderWithKinect01App::updatePlayer(){
 
 	player.angle = atanf(distanceLeftY / distanceLeftX) + atanf(distanceRightY / distanceRightX);
 
-	/*
-	if (player.angle < 0.3f) player.Acc = 0.001f;
-	else if (0.3f < player.angle && player.angle < 0.7f) player.Acc = 0.002f;
-	else if (0.7f < player.angle && player.angle < 1.1f) player.Acc = 0.003f;
-	else if (1.1f < player.angle && player.angle < 1.5f) player.Acc = 0.004f;
-	else if (1.5f < player.angle && player.angle < 1.9f) player.Acc = 0.005f;
-	else if (1.9f < player.angle) player.Acc = 0.006f;
-
-	
-
+	if (player.angle < 0.3f) { player.Acc = 0.0001f; }
+	else if (0.3f < player.angle && player.angle < 0.7f){ player.Acc = 0.0003f; }
+	else if (0.7f < player.angle && player.angle < 1.1f){ player.Acc = 0.0006f; }
+	else if (1.1f < player.angle && player.angle < 1.5f){ player.Acc = 0.0009f; }
+	else if (1.5f < player.angle && player.angle < 1.9f){ player.Acc = 0.00012f;  }
+	else if (1.9f < player.angle) { player.Acc = 0.00015f; }
 
 	/// UPDATE VELOCITY ///
 	switch (player.gestureId) {
-	case 1: player.Vel.x -= player.Acc; player.Vel.y += player.Acc;  break;
-	case 2: player.Vel.x += player.Acc; player.Vel.y += player.Acc;  break;
-	case 3: player.Vel.y += player.Acc; break;
-	case 4: player.Vel.y -= player.Acc;
-			if (player.Vel.x > 0.0f) player.Vel.x -= player.Acc/40.0f;
-			else player.Vel.x += player.Acc/40.0f;
-			break;
+		/// TURN LEFT
+	case 1: player.Vel.x += player.Acc;
+		if (player.Vel.y > 0.0f) player.Vel.y -= player.Acc;
+		else  player.Vel.y += player.Acc;
+		break;
+		/// TURN RIGHT
+	case 2: player.Vel.x -= player.Acc;
+		if (player.Vel.y > 0.0f) player.Vel.y -= player.Acc;
+		else  player.Vel.y += player.Acc;
+		break;
+		/// UP LEFT
+	case 3: player.Vel.x += player.Acc;
+		player.Vel.y += player.Acc;
+		break;
+		/// UP RIGHT
+	case 4: player.Vel.x -= player.Acc;
+		player.Vel.y += player.Acc;
+		break;
+		/// UP STRAIGHT
+	case 5: player.Vel.y += player.Acc;
+		break;
+		/// DOWN LEFT
+	case 6: player.Vel.x += player.Acc;
+		player.Vel.y -= player.Acc;
+		break;
+		/// DOWN RIGHT
+	case 7: player.Vel.x -= player.Acc;
+		player.Vel.y -= player.Acc;
+		break;
+		/// DOWN
+	case 0: player.Vel.y -= player.Acc;
+		if (player.Vel.x > 0.0f) player.Vel.x -= player.Acc;
+		else player.Vel.x += player.Acc;
+		break;
 	}
 
-	if (player.Vel.x > 0.01f) player.Vel.x = 0.01f;
-	if (player.Vel.y > 0.01f) player.Vel.y = 0.01f;
-	if (player.Vel.x < -0.01f) player.Vel.x = -0.01f;
-	if (player.Vel.y < -0.01f) player.Vel.y = -0.01f;
-
-	*/
-	float speed = 0.02;
-	switch (player.gestureId) {
-	case 1: player.Vel = Vec3f(-speed,0.0f,0.0f); break;
-	case 2: player.Vel = Vec3f(speed, 0.0f, 0.0f); break;
-	case 3: player.Vel = Vec3f(0.0f, speed, 0.0f); break;
-	case 4: player.Vel = Vec3f(0.0f, -speed, 0.0f); break;
-	case 5: player.Vel = Vec3f(-speed, speed, 0.0f); break;
-	case 6: player.Vel = Vec3f(speed, speed, 0.0f); break;
+	if (player.Vel.x > 0.005f) {
+		player.Vel.x = 0.005f; 
+		console() << "MAX X" << endl;
 	}
+	if (player.Vel.y > 0.005f) {
+		player.Vel.y = 0.005f; 
+		console() << "MAX Y" << endl;
+	}
+	if (player.Vel.x < -0.005f) {
+		player.Vel.x = -0.005f;
+		console() << " MAX -X" << endl;
+	}
+	if (player.Vel.y < -0.005f){
+		player.Vel.y = -0.005f;
+		console() << "MAX -Y" << endl;
+		}
 
-	if (player.gestureId !=0){
 		/// UPDATE POSITION ///
 		if ((player.Pos.x + player.Vel.x) > -width && (player.Pos.x + player.Vel.x < width)) {
 			player.Pos.x += player.Vel.x;
 		}
+		else player.Vel.x = 0.0f;
+
 		if ((player.Pos.y + player.Vel.y > -height) && (player.Pos.y + player.Vel.y < height)) {
 			player.Pos.y += player.Vel.y;
 		}
-		//console() << "ACC = " << player.Acc << endl;
-		//console() << "VEL = " << player.Vel << endl;
-		//console() << "POS = " << player.Pos << endl;
-	}
+		else player.Vel.y = 0.0f;
+	
 	
 }
 
 void CinderWithKinect01App::drawPlayer(){
-	mCamera.lookAt(player.Pos, Vec3f(player.Pos.x,player.Pos.y,0.0f));
+	//mCamera.lookAt(player.Pos, Vec3f(player.Pos.x,player.Pos.y,0.0f));
+	mCamera.lookAt(player.Pos, Vec3f(player.Pos.x, player.Pos.y, -3.0f));
 	/*
 	// Set up 3D view
 	gl::setMatrices(mCamera);
