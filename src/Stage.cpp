@@ -18,8 +18,13 @@ void Stage::nextStage(){
 		ci::Surface8u surface(loadImage(loadAsset("Stage01.PNG")));
 		stageTexture = gl::Texture(surface);
 	}
-	else if (stageNum == 1) score = 0;
-	else if (stageNum > 2) stageNum = 0;
+	else if (stageNum == 1){
+		loadMovieFile();
+		ci::Surface8u surface(loadImage(loadAsset("Stage01.PNG")));
+		stageTexture = gl::Texture(surface);
+	}
+	else if (stageNum == 2) score = 0;
+	else if (stageNum > 3) stageNum = 0;
 }
 
 int	Stage::getStage(){
@@ -35,6 +40,22 @@ void Stage::setHandPosition(Vec3f hand){
 	handPos.z = -1.0f;
 }
 
+void Stage::loadMovieFile()
+{
+	try {
+		// load up the movie, set it to loop, and begin playing
+		mMovie = qtime::MovieGl::create(loadAsset("test.mov"));
+		mMovie->setLoop();
+		mMovie->play();
+	}
+	catch (...) {
+		console() << "Unable to load the movie." << std::endl;
+		mMovie->reset();
+	}
+
+	movieTexture.reset();
+}
+
 void Stage::updateStage(Vec3f pos, ci::CameraPersp cam){
 	setHandPosition(pos);
 	sCamera = cam;
@@ -45,21 +66,20 @@ void Stage::updateStage(Vec3f pos, ci::CameraPersp cam){
 	//update stage 1
 	else if (stageNum == 1){
 		timer++;
-		if (timer > 61.0f*60.0f) nextStage();
+		if (timer > 15.0f*60.0f) nextStage();
+		if (mMovie)
+			movieTexture = mMovie->getTexture();
 	}
 	//update stage 2
 	else if (stageNum == 2){
 		timer++;
+		if (timer > 61.0f*60.0f) nextStage();
+	}
+	//update stage 3
+	else if (stageNum == 3){
+		timer++;
 		if (timer > 10.0f*60.0f) nextStage();
 	}
-	/*//update stage 3
-	else if (stageNum == 3){
-
-	}
-	//update stage 4
-	else if (stageNum == 4){
-
-	}*/
 }
 
 void Stage::drawStage(){
@@ -100,6 +120,29 @@ void Stage::drawStage(){
 	}
 	//draw stage 1
 	else if (stageNum == 1){
+		//draw BG
+		gl::popMatrices();
+		gl::setMatricesWindow(getWindowSize(), true);
+		Area srcArea(0, 0, stageTexture.getWidth(), stageTexture.getHeight());
+		Rectf destRect(0.0f, 0.0f, getWindowWidth(), getWindowHeight());
+		gl::draw(stageTexture, srcArea, destRect);
+
+		//draw video
+		gl::enableAlphaBlending();
+		if (movieTexture) {
+			gl::scale(Vec2f(0.8f, 0.8f));
+			Rectf centeredRect = Rectf(movieTexture.getBounds()).getCenteredFit(getWindowBounds(), true);
+			centeredRect.x1 += 0.1f*getWindowWidth();
+			centeredRect.x2 += 0.15f*getWindowWidth();
+			centeredRect.y1 -= 100.0f;
+			centeredRect.y2 -= 100.0f;
+			gl::draw(movieTexture, centeredRect);
+			gl::scale(Vec2f(1.0f, 1.0f));
+		}
+		gl::disableAlphaBlending();
+	}
+	//draw stage 2
+	else if (stageNum == 2){
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
 
@@ -108,8 +151,8 @@ void Stage::drawStage(){
 		gl::drawSolidRect(Rectf(0.0f, 0.0f, getWindowWidth(), getWindowHeight()));
 
 	}
-	//draw stage 2
-	else if (stageNum == 2){
+	//draw stage 3
+	else if (stageNum == 3){
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
 
@@ -123,14 +166,6 @@ void Stage::drawStage(){
 
 		
 	}
-	/*//draw stage 3
-	else if (stageNum == 3){
-
-	}
-	//draw stage 4
-	else if (stageNum == 4){
-
-	}*/
 }
 
 void Stage::drawTime(){

@@ -158,6 +158,9 @@ void CinderWithKinect01App::update()
 
 		//Update bacteria & camera
 		if (stage.getStage() == 1){
+			console() << "";
+		}
+		else if (stage.getStage() == 2){
 			updateBacteria();
 		}
 		else{
@@ -227,7 +230,7 @@ void CinderWithKinect01App::draw()
 		gl::setMatricesWindow(getWindowSize(), true);
 
 		stage.drawStage();
-		if (stage.getStage() == 1) {
+		if (stage.getStage() == 2) {
 			drawPlayer();
 			drawBacteria();
 			stage.drawTime();

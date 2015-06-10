@@ -10,8 +10,14 @@
 #include "cinder/ImageIo.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/gl/TextureFont.h"
+#include "cinder/qtime/QuickTime.h"
+#include "cinder/Surface.h"
+#include "cinder/Text.h"
+#include "cinder/Utilities.h"
 
-using namespace ci;
+using namespace ci; 
+using namespace ci::app;
+using namespace std;
 
 class Stage{
 	public:
@@ -20,6 +26,8 @@ class Stage{
 		ci::CameraPersp			sCamera;
 		gl::Texture				stageTexture;
 		gl::Texture				handTexture;
+		gl::Texture				movieTexture;
+		qtime::MovieGlRef		mMovie;
 
 		void					setup();
 		void					nextStage();
@@ -29,6 +37,7 @@ class Stage{
 		void					setHandPosition(Vec3f hand);
 		Vec3f					getHandPosition();
 		int						getStage();
+		void					loadMovieFile();
 
 	private:
 		int						stageNum = 0;

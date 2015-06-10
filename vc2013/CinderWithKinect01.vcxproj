@@ -68,8 +68,8 @@
       <AdditionalIncludeDirectories>$(CINDER)\include;..\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>cinder-$(PlatformToolset)_d.lib;Kinect10.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(CINDER)\lib\msw\x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cinder-$(PlatformToolset)_d.lib;Kinect10.lib;%(AdditionalDependencies);CVClient.lib;QTMLClient.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CINDER)\lib\msw\x86;$(CINDER)\blocks\QuickTime\lib\msw\x86</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
