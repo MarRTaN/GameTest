@@ -19,6 +19,7 @@ class Stage{
 		void					nextStage();
 		void					updateStage(Vec3f pos, ci::CameraPersp cam);
 		void					drawStage();
+		void					drawTime();
 		void					setHandPosition(Vec3f hand);
 		Vec3f					getHandPosition();
 		int						getStage();

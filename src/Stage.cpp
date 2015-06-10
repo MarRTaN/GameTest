@@ -94,21 +94,6 @@ void Stage::drawStage(){
 		gl::color(Color(0.0f, 1.0f, 0.0f));
 		gl::drawSolidRect(Rectf(0.0f, 0.0f, getWindowWidth(), getWindowHeight()));
 
-		gl::enableAlphaBlending();
-
-		//draw score
-		gl::drawString(std::to_string(score), Vec2f(30.0f, 30.0f), Color(1.0f, 1.0f, 1.0f), ci::Font("Tahoma",40.0f));
-
-		//draw time
-		float newTime = 60.0f - (timer / 60.0f);
-		float timeBarWidth = ((getWindowWidth() - 20.0f)*(newTime / 60.0f));
-		if (timeBarWidth < 0.0f) timeBarWidth = 0.0f;
-		gl::color(Color(1.0f, 1.0f, 1.0f));
-		gl::drawSolidRect(Rectf(10.0f, 10.0f, getWindowWidth()-10.0f, 40.0f));
-		gl::color(Color(0.0f, 0.0f, 1.0f));
-		gl::drawSolidRect(Rectf(10.0f, 10.0f, timeBarWidth + 10.0f, 40.0f));
-
-		gl::disableAlphaBlending();
 	}
 	//draw stage 2
 	else if (stageNum == 2){
@@ -133,4 +118,23 @@ void Stage::drawStage(){
 	else if (stageNum == 4){
 
 	}*/
+}
+
+void Stage::drawTime(){
+
+	gl::enableAlphaBlending();
+
+	//draw score
+	gl::drawString(std::to_string(score), Vec2f(30.0f, 30.0f), Color(1.0f, 1.0f, 1.0f), ci::Font("Tahoma", 40.0f));
+
+	//draw time
+	float newTime = 60.0f - (timer / 60.0f);
+	float timeBarWidth = ((getWindowWidth() - 20.0f)*(newTime / 60.0f));
+	if (timeBarWidth < 0.0f) timeBarWidth = 0.0f;
+	gl::color(Color(1.0f, 1.0f, 1.0f));
+	gl::drawSolidRect(Rectf(10.0f, 10.0f, getWindowWidth() - 10.0f, 40.0f));
+	gl::color(Color(0.0f, 0.0f, 1.0f));
+	gl::drawSolidRect(Rectf(10.0f, 10.0f, timeBarWidth + 10.0f, 40.0f));
+
+	gl::disableAlphaBlending();
 }

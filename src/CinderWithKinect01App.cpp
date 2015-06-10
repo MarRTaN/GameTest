@@ -221,6 +221,7 @@ void CinderWithKinect01App::draw()
 		if (stage.getStage() == 1) {
 			drawPlayer();
 			drawBacteria();
+			stage.drawTime();
 		}
 		else{
 			reset();
