@@ -83,7 +83,7 @@ class CinderWithKinect01App : public AppBasic
 	int									countStillMove;
 
 	//Window
-	float								width = 0.2;
+	float								width = 0.3;
 	float								height = 0.15;
 
 
@@ -295,16 +295,16 @@ void CinderWithKinect01App::getGesture(){
 			console() << "TURN RIGHT" << endl;
 			player.gestureId = 2; ///TURN RIGHT
 		}
-		else if (player.handLeftPos.x < player.elbowLeftPos.x && player.elbowLeftPos.x < player.handRightPos.x && player.handRightPos.x < player.elbowRightPos.x && 
-			player.handLeftPos.y > player.elbowLeftPos.y && player.elbowLeftPos.y > player.centerPos.y &&
-			player.handRightPos.y > player.elbowRightPos.y && player.elbowRightPos.y > player.centerPos.y){
+		else if (player.handLeftPos.x < player.elbowLeftPos.x && player.handRightPos.x < player.elbowRightPos.x && 
+			player.handLeftPos.y > player.elbowLeftPos.y && player.	handLeftPos.y > player.centerPos.y &&
+			player.handRightPos.y > player.elbowRightPos.y && player.handRightPos.y > player.centerPos.y){
 			console() << "UP LEFT" << endl;
 			player.gestureId = 3; /// UP LEFT
 		}
 
-		else if (player.elbowLeftPos.x < player.handLeftPos.x && player.handLeftPos.x < player.elbowRightPos.x && player.elbowRightPos.x < player.handRightPos.x &&
-			player.handLeftPos.y > player.elbowLeftPos.y && player.elbowLeftPos.y > player.centerPos.y &&
-			player.handRightPos.y > player.elbowRightPos.y && player.elbowRightPos.y > player.centerPos.y){
+		else if (player.elbowLeftPos.x < player.handLeftPos.x && player.elbowRightPos.x < player.handRightPos.x &&
+			player.handLeftPos.y > player.elbowLeftPos.y && player.handLeftPos.y > player.centerPos.y &&
+			player.handRightPos.y > player.elbowRightPos.y && player.handRightPos.y > player.centerPos.y){
 			console() << "UP RIGHT" << endl;
 			player.gestureId = 4; /// UP RIGHT
 		}
