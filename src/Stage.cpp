@@ -120,6 +120,7 @@ void Stage::drawStage(){
 	}
 	//draw stage 1
 	else if (stageNum == 1){
+
 		//draw BG
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
