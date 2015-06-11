@@ -62,9 +62,6 @@
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\include\cinder\CinderResources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h">
-      <Filter>blocks\Cinder-KinectSdk</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Bacteria.h">
       <Filter>Source Files\Bacteria</Filter>
     </ClInclude>
@@ -73,6 +70,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Player.h">
       <Filter>Source Files\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h">
+      <Filter>blocks\Cinder-KinectSdk</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

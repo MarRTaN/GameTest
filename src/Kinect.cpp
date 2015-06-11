@@ -704,6 +704,7 @@ void Kinect::run()
 
 					mUserCount = 0;
 					for ( uint32_t i = 0; i < NUI_SKELETON_COUNT; ++i ) {
+
 						if ( mActiveUsers[ i ] ) {
 							mUserCount++;
 						}
@@ -846,6 +847,7 @@ Kinect::Pixel16u Kinect::shortToPixel( uint16_t value )
 	// Extract depth and user values
 	uint16_t depth = 0xFFFF - 0x10000 * ( ( value&  0xFFF8 ) >> 3 ) / 0x0FFF;
 	uint16_t user = value&  7;
+
 
 	Pixel16u pixel;
 	pixel.b = 0;

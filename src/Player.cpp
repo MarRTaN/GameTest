@@ -41,6 +41,7 @@ int Player::getGesture(vector<Skeleton> mSkeletons){
 			else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_LEFT) elbowLeftPos = boneIt->second.getPosition();
 			else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_RIGHT) elbowRightPos = boneIt->second.getPosition();
 			else if (boneIt->first == NUI_SKELETON_POSITION_SHOULDER_CENTER) centerPos = boneIt->second.getPosition();
+			else if (boneIt->first == NUI_SKELETON_POSITION_HEAD) headPos = boneIt->second.getPosition();
 		}
 		if (handLeftPos.x < handRightPos.x &&
 		handRightPos.y > elbowRightPos.y && elbowRightPos.y > centerPos.y && elbowLeftPos.y > handLeftPos.y){
