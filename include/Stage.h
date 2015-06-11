@@ -23,15 +23,16 @@ class Stage{
 	public:
 		int						timer = 0;
 		int						score = 0;
-		ci::CameraPersp			sCamera;
 		gl::Texture				stageTexture;
 		gl::Texture				handTexture;
 		gl::Texture				movieTexture;
 		qtime::MovieGlRef		mMovie;
+		float					worldAngle;
+		ci::CameraPersp			sCamera;
 
 		void					setup();
 		void					nextStage();
-		void					updateStage(Vec3f pos, ci::CameraPersp cam);
+		void					updateStage(Vec3f pos, ci::CameraPersp mCamera);
 		void					drawStage();
 		void					drawTime();
 		void					setHandPosition(Vec3f hand);

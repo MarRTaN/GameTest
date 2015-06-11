@@ -4,9 +4,11 @@
 #include "cinder/gl/Texture.h"
 #include "cinder/app/AppNative.h"
 #include <math.h>
+#include "cinder/ImageIo.h"
 #include "Kinect.h"
 #include "Bacteria.h"
 #include "Stage.h"
+#include "Player.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -19,16 +21,6 @@ int bacteriaBornTime = 100;
 int bacteriaTimeCount = 0;
 bool hit = false;
 
-class Player{
-	public:
-		int			gestureId;
-		Skeleton	playerSkel;
-		Vec3f		Pos;
-		Vec3f		Vel;
-		float		Acc;
-		Vec3f		handLeftPos, handRightPos, elbowLeftPos, elbowRightPos,centerPos;
-		float		angle;
-};
 
 class CinderWithKinect01App : public AppBasic 
 {
@@ -37,21 +29,15 @@ class CinderWithKinect01App : public AppBasic
 	void setup();
 	void update();
 	void draw();
-	void drawNearestSkeleton();
-	void drawNearestBone();
-	void drawNearestHand();
-	void keyDown( KeyEvent event );
-	void shutdown();
 	void updateBacteria();
 	void drawBacteria();
-	void getGesture();
-	void updatePlayer();
-	void drawPlayer();
+	void keyDown(KeyEvent event);
 	void reset();
+	void shutdown();
 
   private:
-	vector<Vec3f>			mPoints;
-	ci::CameraPersp			mCamera;
+	vector<Vec3f>						mPoints;
+	ci::CameraPersp						mCamera;
 
 	// Kinect
 	ci::Surface8u						mColorSurface;
@@ -81,14 +67,6 @@ class CinderWithKinect01App : public AppBasic
 
 	//Player
 	Player								player;
-	float								stillMove=0.01f;
-	int									countStillMove;
-
-	//Window
-	float								width = 0.3;
-	float								height = 0.2;
-
-
 
 };
 
@@ -141,9 +119,11 @@ void CinderWithKinect01App::setup()
 	// Set up camera
 	mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
-
 	player.Pos = Vec3f(0, -0.2f, 1.0f);
 	stage.setup();
+
+	//player setup
+	player.setup();
 }
 
 void CinderWithKinect01App::update()
@@ -151,7 +131,8 @@ void CinderWithKinect01App::update()
 	// Device is capturing
 	if ( mKinect->isCapturing() ) {
 		mKinect->update();
-		updatePlayer();
+
+		player.updatePlayer(mSkeletons);
 
 		//check hand and update stage
 		stage.updateStage(player.handRightPos, mCamera);
@@ -176,6 +157,29 @@ void CinderWithKinect01App::update()
 
 }
 
+void CinderWithKinect01App::draw()
+{
+	// We're capturing
+	if (mKinect->isCapturing()) {
+
+		// Clear window
+		gl::clear();
+		gl::popMatrices();
+		gl::setMatricesWindow(getWindowSize(), true);
+
+		stage.drawStage();
+		if (stage.getStage() == 2) {
+			mCamera.lookAt(player.Pos, Vec3f(player.Pos.x, player.Pos.y, -3.0f));
+			player.drawPlayer();
+			drawBacteria();
+			stage.drawTime();
+		}
+		else{
+			reset();
+		}
+	}
+}
+
 void CinderWithKinect01App::updateBacteria(){
 	if (bacteriaTimeCount > bacteriaBornTime){
 		Bacteria newBac = Bacteria();
@@ -186,12 +190,13 @@ void CinderWithKinect01App::updateBacteria(){
 
 	bacteriaTimeCount++;
 	for (int i = 0; i < bacterias.size(); i++){
-		float hitRange = 0.1f;
+		float hitRangeX = 0.19f;
+		float hitRangeY = 0.17f;
 		Vec3f pl = player.Pos;
 		Vec3f ba = bacterias[i].position;
 
 		//Check Baacteria Hit
-		if (abs(pl.x - ba.x) < hitRange && abs(pl.y - ba.y) < hitRange && ba.z > -0.1f && ba.z < 0.0f){
+		if (abs(pl.x - ba.x) < hitRangeX && abs(pl.y - 0.1f - ba.y) < hitRangeY && ba.z > 0.05f && ba.z < 0.1f){
 			stage.score++;
 			bacterias[i].isHit = true;
 			hit = false;
@@ -206,7 +211,6 @@ void CinderWithKinect01App::updateBacteria(){
 void CinderWithKinect01App::drawBacteria(){
 	// Set up 3D view
 	gl::setMatrices(mCamera);
-	gl::translate(0.0f, 0.0f, 0.0f);
 
 	// Move skeletons down below the rest of the interface
 	gl::pushMatrices();
@@ -219,238 +223,23 @@ void CinderWithKinect01App::drawBacteria(){
 	gl::setMatricesWindow(getWindowSize(), true);
 }
 
-void CinderWithKinect01App::draw()
-{
-	// We're capturing
-	if (mKinect->isCapturing()) {
-
-		// Clear window
-		gl::clear();
-		gl::popMatrices();
-		gl::setMatricesWindow(getWindowSize(), true);
-
-		stage.drawStage();
-		if (stage.getStage() == 2) {
-			drawPlayer();
-			drawBacteria();
-			stage.drawTime();
-		}
-		else{
-			reset();
-		}
-	}
-}
-
-
-void CinderWithKinect01App::keyDown( KeyEvent event )
+void CinderWithKinect01App::keyDown(KeyEvent event)
 {
 	// Key on key...
-	switch( event.getCode() ) {
-		case KeyEvent::KEY_ESCAPE:
-			quit();
+	switch (event.getCode()) {
+	case KeyEvent::KEY_ESCAPE:
+		quit();
 		break;
-		case KeyEvent::KEY_f:
-			setFullScreen( ! isFullScreen() );
+	case KeyEvent::KEY_f:
+		setFullScreen(!isFullScreen());
 		break;
-		case KeyEvent::KEY_a:
-			hit = true;
+	case KeyEvent::KEY_a:
+		hit = true;
 		break;
-		case KeyEvent::KEY_s:
-			stage.nextStage();
-		break;
-	}
-}
-
-void CinderWithKinect01App::shutdown()
-{
-	// Stop input
-	mKinect->removeCallback(mCallbackDepthId);
-	mKinect->removeCallback(mCallbackSkeletonId);
-	mKinect->removeCallback(mCallbackColorId);
-	mKinect->stop();
-	mPoints.clear();
-}
-
-void CinderWithKinect01App::getGesture(){
-
-	float nearestDepth = 100000.0f;
-	vector<Skeleton>::const_iterator nearestSkeleton;
-	bool isTrackedSkeleton = false;
-	// Iterate through skeletons
-	uint32_t i = 0;
-	for (vector<Skeleton>::const_iterator skeletonIt = mSkeletons.cbegin(); skeletonIt != mSkeletons.cend(); ++skeletonIt, i++) {
-
-		// Iterate through joints
-		for (Skeleton::const_iterator boneIt = skeletonIt->cbegin(); boneIt != skeletonIt->cend(); ++boneIt) {
-
-			const Bone& bone = boneIt->second;
-			Vec3f position = bone.getPosition();
-
-			if (position.z < nearestDepth) {
-				nearestDepth = position.z;
-				nearestSkeleton = skeletonIt;
-				isTrackedSkeleton = true;
-			}
-		}
-	}
-
-	if (isTrackedSkeleton){
-		for (Skeleton::const_iterator boneIt = nearestSkeleton->cbegin(); boneIt != nearestSkeleton->cend(); ++boneIt){
-			if (boneIt->first == NUI_SKELETON_POSITION_HAND_LEFT) player.handLeftPos = boneIt->second.getPosition();
-			else if (boneIt->first == NUI_SKELETON_POSITION_HAND_RIGHT) player.handRightPos = boneIt->second.getPosition();
-			else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_LEFT) player.elbowLeftPos = boneIt->second.getPosition();
-			else if (boneIt->first == NUI_SKELETON_POSITION_ELBOW_RIGHT) player.elbowRightPos = boneIt->second.getPosition();
-			else if (boneIt->first == NUI_SKELETON_POSITION_SHOULDER_CENTER) player.centerPos = boneIt->second.getPosition();
-		}
-
-		if (player.handLeftPos.x < player.handRightPos.x &&
-			player.handLeftPos.y > player.elbowLeftPos.y && player.elbowLeftPos.y > player.centerPos.y && player.elbowRightPos.y > player.handRightPos.y){
-			//console() << "TURN LEFT" << endl;
-			player.gestureId = 1; ///TURN LEFT
-		}
-		else if (player.handLeftPos.x < player.handRightPos.x &&
-			player.handRightPos.y > player.elbowRightPos.y && player.elbowRightPos.y > player.centerPos.y && player.elbowLeftPos.y > player.handLeftPos.y){
-			//console() << "TURN RIGHT" << endl;
-			player.gestureId = 2; ///TURN RIGHT
-		}
-		else if (player.handLeftPos.x < player.elbowLeftPos.x && player.handRightPos.x < player.elbowRightPos.x && 
-			player.handLeftPos.y > player.elbowLeftPos.y && player.	handLeftPos.y > player.centerPos.y &&
-			player.handRightPos.y > player.elbowRightPos.y && player.handRightPos.y > player.centerPos.y){
-			//console() << "UP LEFT" << endl;
-			player.gestureId = 3; /// UP LEFT
-		}
-
-		else if (player.elbowLeftPos.x < player.handLeftPos.x && player.elbowRightPos.x < player.handRightPos.x &&
-			player.handLeftPos.y > player.elbowLeftPos.y && player.handLeftPos.y > player.centerPos.y &&
-			player.handRightPos.y > player.elbowRightPos.y && player.handRightPos.y > player.centerPos.y){
-			//console() << "UP RIGHT" << endl;
-			player.gestureId = 4; /// UP RIGHT
-		}
-		else if (player.handLeftPos.x < player.centerPos.x && player.centerPos.x < player.handRightPos.x &&
-			player.handLeftPos.y > player.elbowLeftPos.y && player.elbowLeftPos.y > player.centerPos.y &&
-			player.handRightPos.y > player.elbowRightPos.y && player.elbowRightPos.y > player.centerPos.y){
-			//console() << "UP" << endl;
-			player.gestureId = 5; /// UP STRAIGHT
-		}
-		else if (player.handLeftPos.x < player.handRightPos.x && player.handRightPos.x < player.centerPos.x &&
-			player.handLeftPos.y < player.elbowLeftPos.y && player.elbowLeftPos.y < player.centerPos.y &&
-			player.handRightPos.y < player.elbowRightPos.y && player.elbowRightPos.y < player.centerPos.y){
-			//console() << "DOWN LEFT" << endl;
-			player.gestureId = 6; /// DOWN LEFT
-		}
-
-		else if (player.centerPos.x < player.handLeftPos.x && player.handLeftPos.x < player.handRightPos.x &&
-			player.handLeftPos.y < player.elbowLeftPos.y && player.elbowLeftPos.y < player.centerPos.y &&
-			player.handRightPos.y < player.elbowRightPos.y && player.elbowRightPos.y < player.centerPos.y){
-			//console() << "DOWN RIGHT" << endl;
-			player.gestureId = 7; /// DOWN RIGHT
-		}
-		else{
-			//console() << "DOWN" << endl;
-			player.gestureId = 0; /// DOWN
-		}
-	}
-	//console() << player.gestureId << endl;
-}
-
-void CinderWithKinect01App::updatePlayer(){
-	getGesture();
-	float distanceLeftX = abs(player.handLeftPos.x - player.centerPos.x);
-	float distanceLeftY = abs(player.handLeftPos.y - player.centerPos.y);
-	float distanceRightX = abs(player.handRightPos.x - player.centerPos.x);
-	float distanceRightY = abs(player.handRightPos.y - player.centerPos.y);
-
-	player.angle = atanf(distanceLeftY / distanceLeftX) + atanf(distanceRightY / distanceRightX);
-
-	if (player.angle < 0.3f) { player.Acc = 0.0001f; }
-	else if (0.3f < player.angle && player.angle < 0.7f){ player.Acc = 0.0003f; }
-	else if (0.7f < player.angle && player.angle < 1.1f){ player.Acc = 0.0006f; }
-	else if (1.1f < player.angle && player.angle < 1.5f){ player.Acc = 0.0009f; }
-	else if (1.5f < player.angle && player.angle < 1.9f){ player.Acc = 0.00012f;  }
-	else if (1.9f < player.angle) { player.Acc = 0.00015f; }
-
-	/// UPDATE VELOCITY ///
-	switch (player.gestureId) {
-		/// TURN LEFT
-	case 1: player.Vel.x += player.Acc;
-		if (player.Vel.y > 0.0f) player.Vel.y -= player.Acc;
-		else  player.Vel.y += player.Acc;
-		break;
-		/// TURN RIGHT
-	case 2: player.Vel.x -= player.Acc;
-		if (player.Vel.y > 0.0f) player.Vel.y -= player.Acc;
-		else  player.Vel.y += player.Acc;
-		break;
-		/// UP LEFT
-	case 3: player.Vel.x += player.Acc;
-		player.Vel.y += player.Acc;
-		break;
-		/// UP RIGHT
-	case 4: player.Vel.x -= player.Acc;
-		player.Vel.y += player.Acc;
-		break;
-		/// UP STRAIGHT
-	case 5: player.Vel.y += player.Acc;
-		break;
-		/// DOWN LEFT
-	case 6: player.Vel.x += player.Acc;
-		player.Vel.y -= player.Acc;
-		break;
-		/// DOWN RIGHT
-	case 7: player.Vel.x -= player.Acc;
-		player.Vel.y -= player.Acc;
-		break;
-		/// DOWN
-	case 0: player.Vel.y -= player.Acc;
-		if (player.Vel.x > 0.0f) player.Vel.x -= player.Acc;
-		else player.Vel.x += player.Acc;
+	case KeyEvent::KEY_s:
+		stage.nextStage();
 		break;
 	}
-
-	if (player.Vel.x > 0.005f) {
-		player.Vel.x = 0.005f; 
-		console() << "MAX X" << endl;
-	}
-	if (player.Vel.y > 0.005f) {
-		player.Vel.y = 0.005f; 
-		console() << "MAX Y" << endl;
-	}
-	if (player.Vel.x < -0.005f) {
-		player.Vel.x = -0.005f;
-		console() << " MAX -X" << endl;
-	}
-	if (player.Vel.y < -0.005f){
-		player.Vel.y = -0.005f;
-		console() << "MAX -Y" << endl;
-		}
-
-		/// UPDATE POSITION ///
-		if ((player.Pos.x + player.Vel.x) > -width && (player.Pos.x + player.Vel.x < width)) {
-			player.Pos.x += player.Vel.x;
-		}
-		else player.Vel.x = 0.0f;
-
-		if ((player.Pos.y + player.Vel.y > -height) && (player.Pos.y + player.Vel.y < height)) {
-			player.Pos.y += player.Vel.y;
-		}
-		else player.Vel.y = 0.0f;
-	
-	
-}
-
-void CinderWithKinect01App::drawPlayer(){
-	//mCamera.lookAt(player.Pos, Vec3f(player.Pos.x,player.Pos.y,0.0f));
-	mCamera.lookAt(player.Pos, Vec3f(player.Pos.x, player.Pos.y, -3.0f));
-	/*
-	// Set up 3D view
-	gl::setMatrices(mCamera);
-
-	// Move skeletons down below the rest of the interface
-	gl::pushMatrices();
-	gl::color(0, 255, 0);
-	gl::drawColorCube(player.Pos, Vec3f(0.2f,0.2f,0.2f));
-	gl::popMatrices();
-	gl::setMatricesWindow(getWindowSize(), true);*/
 }
 
 void CinderWithKinect01App::reset(){
@@ -463,4 +252,13 @@ void CinderWithKinect01App::reset(){
 }
 
 
+void CinderWithKinect01App::shutdown()
+{
+	// Stop input
+	mKinect->removeCallback(mCallbackDepthId);
+	mKinect->removeCallback(mCallbackSkeletonId);
+	mKinect->removeCallback(mCallbackColorId);
+	mKinect->stop();
+	mPoints.clear();
+}
 CINDER_APP_BASIC( CinderWithKinect01App, RendererGl )

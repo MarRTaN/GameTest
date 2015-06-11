@@ -56,9 +56,8 @@ void Stage::loadMovieFile()
 	movieTexture.reset();
 }
 
-void Stage::updateStage(Vec3f pos, ci::CameraPersp cam){
+void Stage::updateStage(Vec3f pos, ci::CameraPersp mCamera){
 	setHandPosition(pos);
-	sCamera = cam;
 	//update stage 0
 	if (stageNum == 0){
 		if (timer > 120) nextStage();
@@ -66,12 +65,13 @@ void Stage::updateStage(Vec3f pos, ci::CameraPersp cam){
 	//update stage 1
 	else if (stageNum == 1){
 		timer++;
-		if (timer > 15.0f*60.0f) nextStage();
+		if (timer > 1.0f*60.0f) nextStage();
 		if (mMovie)
 			movieTexture = mMovie->getTexture();
 	}
 	//update stage 2
 	else if (stageNum == 2){
+		sCamera = mCamera;
 		timer++;
 		if (timer > 61.0f*60.0f) nextStage();
 	}
@@ -142,7 +142,7 @@ void Stage::drawStage(){
 		}
 		gl::disableAlphaBlending();
 	}
-	//draw stage 2
+	//draw stage 2 :: game
 	else if (stageNum == 2){
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
@@ -151,6 +151,20 @@ void Stage::drawStage(){
 		gl::color(Color(0.0f, 1.0f, 0.0f));
 		gl::drawSolidRect(Rectf(0.0f, 0.0f, getWindowWidth(), getWindowHeight()));
 
+		//draw world
+		//stageTexture.bind();
+
+		// Set up 3D view
+		gl::setMatrices(sCamera);
+
+		// Move skeletons down below the rest of the interface
+		gl::pushMatrices();
+		
+		gl::color(Color(1.0f, 0.0f, 0.0f));
+		gl::drawSphere(Vec3f(0.0f, 0.0f, -3.0f), 0.05f, 10);
+
+		gl::popMatrices();
+		gl::setMatricesWindow(getWindowSize(), true);
 	}
 	//draw stage 3
 	else if (stageNum == 3){
