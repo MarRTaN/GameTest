@@ -69,6 +69,9 @@ class CinderWithKinect01App : public AppBasic
 	//Player
 	Player								player;
 
+	float								space = 40.0f;
+	float								change = 2.0f;
+
 };
 
 // Kinect image size
@@ -106,7 +109,7 @@ void CinderWithKinect01App::setup()
 	// Start Kinect with isolated depth tracking only
 	mKinect = Kinect::create();
 	mKinect->start();
-
+	
 
 	// Set the skeleton smoothing to remove jitters. Better smoothing means
 	// less jitters, but a slower response time.
@@ -127,7 +130,7 @@ void CinderWithKinect01App::setup()
 	player.setup();
 
 	//bacteria setup
-	bacTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
+	bacTexture = gl::Texture(loadImage(loadAsset("obj/bacteria.png")));
 }
 
 void CinderWithKinect01App::update()
@@ -171,7 +174,35 @@ void CinderWithKinect01App::draw()
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
 
+		if (stage.getStage() == 0){
+
+			/// feed vid 
+			if (mColorSurface) {
+				Area srcArea(0, 0, mColorSurface.getWidth(), mColorSurface.getHeight());
+				Rectf destRect(getWindowWidth() / 10, getWindowHeight() / 10, getWindowWidth() * 9 / 10, getWindowHeight() * 4 / 10);
+				gl::draw(gl::Texture(mColorSurface), srcArea, destRect);
+				Vec2f headInColor = Vec2f(mKinect->getSkeletonColorPos(player.headPos));
+				if (space < 30.0f || space > 50.0f) change *= -1;
+				space += change;
+				headInColor.x = (getWindowWidth() / 10) + (headInColor.x / mColorSurface.getWidth() * getWindowWidth() * 8 / 10);
+				headInColor.y = (getWindowHeight() / 10) + (headInColor.y / mColorSurface.getHeight() * getWindowHeight() * 3 / 10) - space;
+				console() << destRect << endl;
+				float scale = (3.0f - player.headPos.z) * 15;
+
+				gl::pushMatrices();
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				Surface8u surface(loadImage(loadAsset("arrow.png")));
+				gl::Texture arrowTexture = gl::Texture(surface);
+				gl::draw(arrowTexture, Rectf(headInColor.x - scale*2, headInColor.y - scale, headInColor.x + scale*2, headInColor.y + scale));
+
+				glDisable(GL_BLEND);
+				gl::popMatrices();
+			}
+		}
+
 		stage.drawStage();
+	
 		if (stage.getStage() == 2) {
 			mCamera.lookAt(player.Pos, Vec3f(player.Pos.x, player.Pos.y, -3.0f));
 			player.drawPlayer();

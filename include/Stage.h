@@ -14,6 +14,7 @@
 #include "cinder/Surface.h"
 #include "cinder/Text.h"
 #include "cinder/Utilities.h"
+#include "cinder/Capture.h"
 
 #include "cinder/ObjLoader.h"
 #include "cinder/Sphere.h"
@@ -55,6 +56,8 @@ class Stage{
 	private:
 		int						stageNum = 0;
 		Vec3f					handPos;
+		float				    space = 70.0f;
+		float					change = 2.0f;
 };
 
 #endif

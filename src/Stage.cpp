@@ -4,7 +4,7 @@ using namespace ci;
 using namespace ci::app;
 
 void Stage::setup(){
-	ci::Surface8u surface(loadImage(loadAsset("Stage01.PNG")));
+	ci::Surface8u surface(loadImage(loadAsset("Stage01-2.PNG")));
 	stageTexture = gl::Texture(surface);
 
 	ci::Surface8u surfaceHand(loadImage(loadAsset("hand.png")));
@@ -26,12 +26,12 @@ void Stage::nextStage(){
 	timer = 0;
 	stageNum++;
 	if (stageNum == 0){
-		ci::Surface8u surface(loadImage(loadAsset("Stage01.PNG")));
+		ci::Surface8u surface(loadImage(loadAsset("Stage01-2.PNG")));
 		stageTexture = gl::Texture(surface);
 	}
 	else if (stageNum == 1){
 		loadMovieFile();
-		ci::Surface8u surface(loadImage(loadAsset("Stage01.PNG")));
+		ci::Surface8u surface(loadImage(loadAsset("Stage01-2.PNG")));
 		stageTexture = gl::Texture(surface);
 	}
 	else if (stageNum == 2) {
@@ -60,8 +60,8 @@ void Stage::loadMovieFile()
 	try {
 		// load up the movie, set it to loop, and begin playing
 		mMovie = qtime::MovieGl::create(loadAsset("test.mov"));
-		mMovie->setLoop();
-		mMovie->play();
+		//mMovie->setLoop();
+		//mMovie->play();
 	}
 	catch (...) {
 		console() << "Unable to load the movie." << std::endl;
@@ -80,7 +80,7 @@ void Stage::updateStage(Vec3f pos, ci::CameraPersp mCamera){
 	//update stage 1
 	else if (stageNum == 1){
 		timer++;
-		if (timer > 1.0f*60.0f) nextStage();
+		if (timer > 2.0f*60.0f) nextStage();
 		if (mMovie)
 			movieTexture = mMovie->getTexture();
 	}
@@ -102,7 +102,8 @@ void Stage::drawStage(){
 	if (stageNum == 0){
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
-
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		/*gl::color(Color(1.0f, 0.0f, 0.0f));
 		gl::drawSolidRect(Rectf(0.0f, 0.0f, getWindowWidth(), getWindowHeight()));*/
 		Area srcArea(0, 0, stageTexture.getWidth(), stageTexture.getHeight());

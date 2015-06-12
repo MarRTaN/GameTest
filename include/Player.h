@@ -25,7 +25,7 @@ public:
 	Vec3f				Pos;
 	Vec3f				Vel;
 	float				Acc;
-	Vec3f				handLeftPos, handRightPos, elbowLeftPos, elbowRightPos, centerPos;
+	Vec3f				handLeftPos, handRightPos, elbowLeftPos, elbowRightPos, centerPos, headPos;
 	float				angle;
 	bool				isTrackedSkeleton;
 	float				rotTemp=0.0f;
