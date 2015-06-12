@@ -159,7 +159,6 @@ void CinderWithKinect01App::update()
 	if ( mKinect->isCapturing() ) {
 
 		double diffTime = abs(ci::app::getElapsedSeconds()*1000.0 - passTime);
-		console() << diffTime << std::endl;
 
 		mKinect->update();
 
@@ -169,10 +168,7 @@ void CinderWithKinect01App::update()
 		stage.updateStage(player.handRightPos, mCamera);
 
 		//Update bacteria & camera
-		if (stage.getStage() == 1){
-			console() << "";
-		}
-		else if (stage.getStage() == 2){
+		if (stage.getStage() == 2){
 			updateBubble(diffTime);
 			updateBacteria(diffTime);
 		}
@@ -228,8 +224,13 @@ void CinderWithKinect01App::draw()
 		}
 
 		stage.drawStage();
+
+		if (stage.getStage() == 0){
+			stage.drawLogo();
+			stage.drawHand();
+		}
 	
-		if (stage.getStage() == 2) {
+		else if (stage.getStage() == 2) {
 			mCamera.lookAt(player.Pos, Vec3f(player.Pos.x, player.Pos.y, -3.0f));
 			drawBubble();
 			drawBacteria();
