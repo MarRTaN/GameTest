@@ -119,6 +119,7 @@
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h" />
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\include\cinder\CinderResources.h" />
     <ClInclude Include="..\include\Bacteria.h" />
+    <ClInclude Include="..\include\Ground.h" />
     <ClInclude Include="..\include\Player.h" />
     <ClInclude Include="..\include\Resources.h" />
     <ClInclude Include="..\include\Stage.h" />
@@ -126,6 +127,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\Bacteria.cpp" />
     <ClCompile Include="..\src\CinderWithKinect01App.cpp" />
+    <ClCompile Include="..\src\Ground.cpp" />
     <ClCompile Include="..\src\Kinect.cpp" />
     <ClCompile Include="..\src\Player.cpp" />
     <ClCompile Include="..\src\Stage.cpp" />

@@ -10,6 +10,7 @@ Player::Player(){}
 void Player::setup(){
 	Surface8u surface(loadImage(loadAsset("arm.png")));
 	armTexture = gl::Texture(surface);
+	Pos = Vec3f(0, -0.2f, 1.0f);
 }
 
 int Player::getGesture(vector<Skeleton> mSkeletons){
@@ -290,8 +291,6 @@ void Player::drawPlayer(){
 	}
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	Surface8u surface(loadImage(loadAsset("arm.png")));
-	gl::Texture armTexture = gl::Texture(surface);
 	gl::draw(armTexture, Rectf(-armTexture.getWidth() / 2, -armTexture.getHeight() / 2, armTexture.getWidth() / 2, armTexture.getHeight() / 2));
 	glDisable(GL_BLEND);
 	gl::popMatrices();

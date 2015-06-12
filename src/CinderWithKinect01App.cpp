@@ -9,6 +9,7 @@
 #include "Bacteria.h"
 #include "Stage.h"
 #include "Player.h"
+#include "Ground.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -72,6 +73,9 @@ class CinderWithKinect01App : public AppBasic
 	float								space = 40.0f;
 	float								change = 2.0f;
 
+	//Ground
+	Ground								ground;
+
 };
 
 // Kinect image size
@@ -123,7 +127,7 @@ void CinderWithKinect01App::setup()
 	// Set up camera
 	mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 	mCamera.setPerspective(45.0f, getWindowAspectRatio(), 0.01f, 1000.0f);
-	player.Pos = Vec3f(0, -0.2f, 1.0f);
+
 	stage.setup();
 
 	//player setup
@@ -131,6 +135,9 @@ void CinderWithKinect01App::setup()
 
 	//bacteria setup
 	bacTexture = gl::Texture(loadImage(loadAsset("obj/bacteria.png")));
+
+	//ground setup
+	ground.groundSetup();
 }
 
 void CinderWithKinect01App::update()
@@ -150,6 +157,7 @@ void CinderWithKinect01App::update()
 		}
 		else if (stage.getStage() == 2){
 			updateBacteria();
+			ground.updatePosition();
 		}
 		else{
 			mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
@@ -186,7 +194,6 @@ void CinderWithKinect01App::draw()
 				space += change;
 				headInColor.x = (getWindowWidth() / 10) + (headInColor.x / mColorSurface.getWidth() * getWindowWidth() * 8 / 10);
 				headInColor.y = (getWindowHeight() / 10) + (headInColor.y / mColorSurface.getHeight() * getWindowHeight() * 3 / 10) - space;
-				console() << destRect << endl;
 				float scale = (3.0f - player.headPos.z) * 15;
 
 				gl::pushMatrices();
@@ -205,6 +212,8 @@ void CinderWithKinect01App::draw()
 	
 		if (stage.getStage() == 2) {
 			mCamera.lookAt(player.Pos, Vec3f(player.Pos.x, player.Pos.y, -3.0f));
+			
+			ground.drawGround(mCamera);
 			player.drawPlayer();
 			drawBacteria();
 			stage.drawTime();

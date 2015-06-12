@@ -10,7 +10,7 @@ void Stage::setup(){
 	ci::Surface8u surfaceHand(loadImage(loadAsset("hand.png")));
 	handTexture = gl::Texture(surfaceHand);
 
-	worldTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
+	//worldTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
 
 	//import obj
 	/*ObjLoader loader(loadAsset("obj/Cap.obj"));
@@ -25,6 +25,7 @@ void Stage::setup(){
 void Stage::nextStage(){
 	timer = 0;
 	stageNum++;
+	if (stageNum > 3) stageNum = 0;
 	if (stageNum == 0){
 		ci::Surface8u surface(loadImage(loadAsset("Stage01-2.PNG")));
 		stageTexture = gl::Texture(surface);
@@ -39,7 +40,11 @@ void Stage::nextStage(){
 		ci::Surface8u surface(loadImage(loadAsset("Stage02.PNG")));
 		stageTexture = gl::Texture(surface);
 	}
-	else if (stageNum > 3) stageNum = 0;
+	else if (stageNum == 3){
+		ci::Surface8u surface(loadImage(loadAsset("Stage03.PNG")));
+		stageTexture = gl::Texture(surface);
+	}
+	
 }
 
 int	Stage::getStage(){
@@ -205,6 +210,18 @@ void Stage::drawStage(){
 	}
 	//draw stage 3
 	else if (stageNum == 3){
+		
+		gl::popMatrices();
+		gl::setMatricesWindow(getWindowSize(), true);
+		gl::color(1.0f, 1.0f, 1.0f);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Area srcArea(0, 0, stageTexture.getWidth(), stageTexture.getHeight());
+		Rectf destRect(0.0f, 0.0f, getWindowWidth(), getWindowHeight());
+		gl::draw(stageTexture, srcArea, destRect);
+		gl::drawString(std::to_string(score), Vec2f(50.0f, 120.0f), Color(1.0f, 1.0f, 1.0f), ci::Font("Tahoma", 150.0f));
+		gl::disableAlphaBlending();
+		/*
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
 
@@ -213,9 +230,12 @@ void Stage::drawStage(){
 
 		gl::enableAlphaBlending();
 		//draw score
+
+
+
 		gl::drawString("Good Job !!\n Your score is \n"+std::to_string(score), Vec2f(30.0f, 30.0f), Color(1.0f, 1.0f, 1.0f), ci::Font("Tahoma", 80.0f));
 		gl::disableAlphaBlending();
-
+		*/
 		
 	}
 }
