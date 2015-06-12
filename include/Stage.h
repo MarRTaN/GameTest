@@ -33,6 +33,10 @@ class Stage{
 		gl::Texture				handTexture;
 		gl::Texture				movieTexture;
 		gl::Texture				groundTexture;
+		gl::Texture				button0Texture;
+		gl::Texture				button1Texture;
+		gl::Texture				button2Texture;
+		gl::Texture				button3Texture;
 		qtime::MovieGlRef		mMovie;
 		float					worldAngle;
 		ci::CameraPersp			sCamera;

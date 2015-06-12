@@ -10,6 +10,17 @@ void Stage::setup(){
 	ci::Surface8u surfaceHand(loadImage(loadAsset("hand.png")));
 	handTexture = gl::Texture(surfaceHand);
 
+	Surface8u surfaceButton0(loadImage(loadAsset("button0.png")));
+	button0Texture = gl::Texture(surfaceButton0);
+	
+	Surface8u surfaceButton1(loadImage(loadAsset("button1.png")));
+	button1Texture = gl::Texture(surfaceButton1);
+	
+	Surface8u surfaceButton2(loadImage(loadAsset("button2.png")));
+	button2Texture = gl::Texture(surfaceButton2);
+	
+	Surface8u surfaceButton3(loadImage(loadAsset("button3.png")));
+	button3Texture = gl::Texture(surfaceButton3);
 	//worldTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
 
 	//import obj
@@ -115,8 +126,7 @@ void Stage::drawStage(){
 		Rectf destRect(0.0f, 0.0f, getWindowWidth(), getWindowHeight());
 		gl::draw(stageTexture, srcArea, destRect);
 
-
-		float buttonSize = 50.0f;
+		float buttonSize = 90.0f;
 		float handSize = 55.0f;
 		Vec2f buttonPos = Vec2f(getWindowWidth() / 2, getWindowHeight() / 2 + 100.0f);
 		Vec2f handIn2D = Vec2f(getWindowWidth()*(getHandPosition().x + 0.5) / 1.0f, -1.0f*getWindowHeight()*(getHandPosition().y - 0.75) / 1.5f);
@@ -128,7 +138,22 @@ void Stage::drawStage(){
 		}
 		else { timer = 0; }
 
-		gl::drawSolidCircle(buttonPos, buttonSize);
+
+		float shift = 130.0f;
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		gl::color(1, 1, 1);
+		if (timer > 0 && timer < 40) draw(button3Texture, Rectf(getWindowWidth()/2 - buttonSize, getWindowHeight()/2 - buttonSize + shift, getWindowWidth()/2 + buttonSize, getWindowHeight()/2 + buttonSize + shift));
+		else if (timer > 40 && timer < 80) draw(button2Texture, Rectf(getWindowWidth() / 2 - buttonSize, getWindowHeight() / 2 - buttonSize + shift, getWindowWidth() / 2 + buttonSize, getWindowHeight() / 2 + buttonSize + shift));
+		else if (timer > 80 && timer < 120) draw(button1Texture, Rectf(getWindowWidth() / 2 - buttonSize, getWindowHeight() / 2 - buttonSize + shift, getWindowWidth() / 2 + buttonSize, getWindowHeight() / 2 + buttonSize + shift));
+		else draw(button0Texture, Rectf(getWindowWidth() / 2 - buttonSize, getWindowHeight() / 2 - buttonSize + shift, getWindowWidth() / 2 + buttonSize, getWindowHeight() / 2 + buttonSize + shift));
+		//gl::draw(armTexture, Rectf(-armTexture.getWidth() / 2, -armTexture.getHeight() / 2, armTexture.getWidth() / 2, armTexture.getHeight() / 2));
+		glDisable(GL_BLEND);
+		gl::popMatrices();
+
+
+
+		//gl::drawSolidCircle(buttonPos, buttonSize);
 		gl::color(1.0f, 1.0f, 1.0f);
 
 		//draw hand
