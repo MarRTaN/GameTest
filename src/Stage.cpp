@@ -11,6 +11,7 @@ void Stage::setup(){
 	handTexture = gl::Texture(surfaceHand);
 
 	worldTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
+	
 
 	//import obj
 	/*ObjLoader loader(loadAsset("obj/Cap.obj"));

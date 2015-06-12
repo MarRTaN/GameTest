@@ -69,7 +69,7 @@ class CinderWithKinect01App : public AppBasic
 	//Player
 	Player								player;
 
-	float								space = 60.0f;
+	float								space = 40.0f;
 	float								change = 2.0f;
 
 };
@@ -129,13 +129,8 @@ void CinderWithKinect01App::setup()
 	//player setup
 	player.setup();
 
-<<<<<<< HEAD
-
-
-=======
 	//bacteria setup
-	bacTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
->>>>>>> 0532a1d505633d4a39fa1954ea407a48be29fd11
+	bacTexture = gl::Texture(loadImage(loadAsset("obj/bacteria.png")));
 }
 
 void CinderWithKinect01App::update()
@@ -187,7 +182,7 @@ void CinderWithKinect01App::draw()
 				Rectf destRect(getWindowWidth() / 10, getWindowHeight() / 10, getWindowWidth() * 9 / 10, getWindowHeight() * 4 / 10);
 				gl::draw(gl::Texture(mColorSurface), srcArea, destRect);
 				Vec2f headInColor = Vec2f(mKinect->getSkeletonColorPos(player.headPos));
-				if (space < 50.0f || space > 70.0f) change *= -1;
+				if (space < 30.0f || space > 50.0f) change *= -1;
 				space += change;
 				headInColor.x = (getWindowWidth() / 10) + (headInColor.x / mColorSurface.getWidth() * getWindowWidth() * 8 / 10);
 				headInColor.y = (getWindowHeight() / 10) + (headInColor.y / mColorSurface.getHeight() * getWindowHeight() * 3 / 10) - space;

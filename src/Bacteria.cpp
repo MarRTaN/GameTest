@@ -6,7 +6,7 @@ Bacteria::Bacteria(gl::Texture bac){
 	position.y = static_cast <float> ((rand()) / static_cast <float> (RAND_MAX)*0.1) - 0.05f;
 	position.z = -3.0f;
 
-	bacTexture = gl::Texture(loadImage(loadAsset("obj/ball01.png")));
+	bacTexture = bac;
 }
 
 void Bacteria::updatePosition(){
