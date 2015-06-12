@@ -28,6 +28,9 @@
     <Filter Include="Source Files\Player">
       <UniqueIdentifier>{2eded4ea-5459-4e2f-93f7-62a03c32c636}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Bubble">
+      <UniqueIdentifier>{07781e78-842b-45fc-95e9-7bad44fc3ea7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\CinderWithKinect01App.cpp">
@@ -47,6 +50,9 @@
     </ClCompile>
     <ClCompile Include="..\src\Player.cpp">
       <Filter>Source Files\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Bubble.cpp">
+      <Filter>Source Files\Bubble</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +79,9 @@
     </ClInclude>
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h">
       <Filter>blocks\Cinder-KinectSdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Bubble.h">
+      <Filter>Source Files\Bubble</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

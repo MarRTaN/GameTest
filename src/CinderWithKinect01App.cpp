@@ -7,6 +7,7 @@
 #include "cinder/ImageIo.h"
 #include "Kinect.h"
 #include "Bacteria.h"
+#include "Bubble.h"
 #include "Stage.h"
 #include "Player.h"
 
@@ -19,6 +20,8 @@ int posXRange = 2; //Range -2 to 2
 int posYRange = 2; //Range -2 to 2
 int bacteriaBornTime = 100;
 int bacteriaTimeCount = 0;
+int bubbleBornTime = 100;
+int bubbleTimeCount = 0;
 bool hit = false;
 
 
@@ -29,8 +32,10 @@ class CinderWithKinect01App : public AppBasic
 	void setup();
 	void update();
 	void draw();
-	void updateBacteria();
+	void updateBacteria(double diffTime);
 	void drawBacteria();
+	void updateBubble(double diffTime);
+	void drawBubble();
 	void keyDown(KeyEvent event);
 	void reset();
 	void shutdown();
@@ -62,6 +67,11 @@ class CinderWithKinect01App : public AppBasic
 	//Bacteria
 	vector<Bacteria>					bacterias;
 	gl::Texture							bacTexture;
+	gl::Texture							bacHitTexture;
+
+	//Bubble
+	vector<Bubble>						bubbles;
+	gl::Texture							bubbleTexture;
 
 	//Stage
 	Stage								stage;
@@ -71,6 +81,9 @@ class CinderWithKinect01App : public AppBasic
 
 	float								space = 40.0f;
 	float								change = 2.0f;
+
+	//time
+	double								passTime;
 
 };
 
@@ -131,12 +144,23 @@ void CinderWithKinect01App::setup()
 
 	//bacteria setup
 	bacTexture = gl::Texture(loadImage(loadAsset("obj/bacteria.png")));
+	bacHitTexture = gl::Texture(loadImage(loadAsset("obj/bacteriaHit.png")));
+
+	//bubble setup
+	bubbleTexture = gl::Texture(loadImage(loadAsset("obj/bubble.png")));
+
+	//set time
+	passTime = 0;
 }
 
 void CinderWithKinect01App::update()
 {
 	// Device is capturing
 	if ( mKinect->isCapturing() ) {
+
+		double diffTime = abs(ci::app::getElapsedSeconds()*1000.0 - passTime);
+		console() << diffTime << std::endl;
+
 		mKinect->update();
 
 		player.updatePlayer(mSkeletons);
@@ -149,11 +173,14 @@ void CinderWithKinect01App::update()
 			console() << "";
 		}
 		else if (stage.getStage() == 2){
-			updateBacteria();
+			updateBubble(diffTime);
+			updateBacteria(diffTime);
 		}
 		else{
 			mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
 		}
+
+		passTime = ci::app::getElapsedSeconds()*1000.0;
 	} 
 	else {
 		// If Kinect initialization failed, try again every 90 frames
@@ -186,7 +213,6 @@ void CinderWithKinect01App::draw()
 				space += change;
 				headInColor.x = (getWindowWidth() / 10) + (headInColor.x / mColorSurface.getWidth() * getWindowWidth() * 8 / 10);
 				headInColor.y = (getWindowHeight() / 10) + (headInColor.y / mColorSurface.getHeight() * getWindowHeight() * 3 / 10) - space;
-				console() << destRect << endl;
 				float scale = (3.0f - player.headPos.z) * 15;
 
 				gl::pushMatrices();
@@ -205,8 +231,9 @@ void CinderWithKinect01App::draw()
 	
 		if (stage.getStage() == 2) {
 			mCamera.lookAt(player.Pos, Vec3f(player.Pos.x, player.Pos.y, -3.0f));
-			player.drawPlayer();
+			drawBubble();
 			drawBacteria();
+			player.drawPlayer();
 			stage.drawTime();
 		}
 		else{
@@ -215,9 +242,37 @@ void CinderWithKinect01App::draw()
 	}
 }
 
-void CinderWithKinect01App::updateBacteria(){
+void CinderWithKinect01App::updateBubble(double diffTime){
 	if (bacteriaTimeCount > bacteriaBornTime){
-		Bacteria newBac = Bacteria(bacTexture);
+		Bubble newBubble = Bubble(bubbleTexture);
+		bubbles.push_back(newBubble);
+		bubbleTimeCount = 0;
+		bubbleBornTime = rand() % 20 + 20;
+	}
+
+	bacteriaTimeCount++;
+
+	for (int i = 0; i < bubbles.size(); i++){
+		bubbles[i].updatePosition(diffTime);
+		if (bubbles[i].isOutOfBound){
+			bubbles.erase(bubbles.cbegin());
+		}
+	}
+}
+
+void CinderWithKinect01App::drawBubble(){
+	for (int i = 0; i < bubbles.size(); i++){
+		gl::setMatrices(mCamera);
+		gl::pushMatrices();
+		bubbles[i].draw();
+		gl::popMatrices();
+	}
+	gl::setMatricesWindow(getWindowSize(), true);
+}
+
+void CinderWithKinect01App::updateBacteria(double diffTime){
+	if (bacteriaTimeCount > bacteriaBornTime){
+		Bacteria newBac = Bacteria(bacTexture, bacHitTexture);
 		bacterias.push_back(newBac);
 		bacteriaTimeCount = 0;
 		bacteriaBornTime = rand() % 20 + 30;
@@ -236,15 +291,16 @@ void CinderWithKinect01App::updateBacteria(){
 			bacterias[i].isHit = true;
 			hit = false;
 		}
-		bacterias[i].updatePosition();
+		bacterias[i].updatePosition(diffTime);
 		if (bacterias[i].isOutOfBound){
 			bacterias.erase(bacterias.cbegin());
 		}
 	}
 }
 
+
 void CinderWithKinect01App::drawBacteria(){
-	for (int i = 0; i < bacterias.size(); i++){
+	for (int i = bacterias.size()-1; i >= 0; i--){
 		gl::setMatrices(mCamera);
 		gl::pushMatrices();
 		bacterias[i].draw();

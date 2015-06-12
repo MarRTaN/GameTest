@@ -21,10 +21,11 @@ public:
 	bool			isHit = false;
 	bool			isOutOfBound = false;
 	gl::Texture		bacTexture;
+	gl::Texture		bacHitTexture;
 	
-	Bacteria(gl::Texture bac);
+	Bacteria(gl::Texture bac, gl::Texture bacHit);
 
-	void	updatePosition();
+	void	updatePosition(double diffTime);
 	void	draw();
 };
 
