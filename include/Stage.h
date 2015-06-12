@@ -20,7 +20,6 @@
 #include "cinder/Sphere.h"
 #include "cinder/gl/GlslProg.h"
 #include "cinder/gl/Vbo.h"
-#include "cinder/gl/Texture.h"
 
 using namespace ci; 
 using namespace ci::app;
