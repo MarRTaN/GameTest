@@ -32,11 +32,16 @@ class Stage{
 		gl::Texture				stageTexture;
 		gl::Texture				handTexture;
 		gl::Texture				movieTexture;
+<<<<<<< HEAD
 		gl::Texture				groundTexture;
 		gl::Texture				button0Texture;
 		gl::Texture				button1Texture;
 		gl::Texture				button2Texture;
 		gl::Texture				button3Texture;
+=======
+		gl::Texture				bubbleTexture;
+		gl::Texture				logoTexture;
+>>>>>>> cf781aefd47af946a6ddd68adbdde5eca5d162a7
 		qtime::MovieGlRef		mMovie;
 		float					worldAngle;
 		ci::CameraPersp			sCamera;
@@ -52,6 +57,8 @@ class Stage{
 		void					updateStage(Vec3f pos, ci::CameraPersp mCamera);
 		void					drawStage();
 		void					drawTime();
+		void					drawLogo();
+		void					drawHand();
 		void					setHandPosition(Vec3f hand);
 		Vec3f					getHandPosition();
 		int						getStage();

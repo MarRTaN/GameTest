@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef BACTERIA_INCLUDE
-#define BACTERIA_INCLUDE
+#ifndef BUBBLE_INCLUDE
+#define BUBBLE_INCLUDE
 
 #include "cinder/gl/gl.h"
 #include "cinder/gl/Texture.h"
@@ -12,18 +12,16 @@
 using namespace ci;
 using namespace ci::app;
 
-class Bacteria{
+class Bubble{
 public:
 	Vec3f			position;
-	float			vel = 0.05f;
-	float			bacteriaSize = 0.05f;
+	float			vel = 0.01f;
+	float			bubbleSize = 0.05f;
 	float			splitAngle = 0.0f;
-	bool			isHit = false;
 	bool			isOutOfBound = false;
-	gl::Texture		bacTexture;
-	gl::Texture		bacHitTexture;
-	
-	Bacteria(gl::Texture bac, gl::Texture bacHit);
+	gl::Texture		bubbleTexture;
+
+	Bubble(gl::Texture bubble);
 
 	void	updatePosition(double diffTime);
 	void	draw();

@@ -1,18 +1,20 @@
 #include "Bacteria.h"
 
-Bacteria::Bacteria(gl::Texture bac){
+Bacteria::Bacteria(gl::Texture bac, gl::Texture bacHit){
 	//initial bacteria position
 	position.x = static_cast <float> ((rand()) / static_cast <float> (RAND_MAX)*0.3) - 0.15f;
 	position.y = static_cast <float> ((rand()) / static_cast <float> (RAND_MAX)*0.1) - 0.05f;
 	position.z = -3.0f;
 
 	bacTexture = bac;
+	bacHitTexture = bacHit;
 }
 
-void Bacteria::updatePosition(){
+void Bacteria::updatePosition(double diffTime){
 	//update z
+	float curVel = (vel*60.0f*diffTime) / 1000.0f;
 	float z = position.z;
-	position.z += vel;
+	position.z += curVel;
 	if (position.z > 1.0f){
 		isOutOfBound = true;
 	}
@@ -21,7 +23,7 @@ void Bacteria::updatePosition(){
 void Bacteria::draw(){
 	gl::color(ColorAf::white());
 
-	GLfloat light_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	GLfloat light_ambient[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	GLfloat light_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	GLfloat light_specular[] = { 1.2f, 1.2f, 1.2f, 1.0f };
 	GLfloat light_position[] = { 30.0f, 30.0f, 30.0f };
@@ -49,15 +51,19 @@ void Bacteria::draw(){
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 	glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 
-	bacTexture.enableAndBind();
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	if (!isHit){
-		gl::drawSphere(position, bacteriaSize, 10);
+		bacTexture.enableAndBind();
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		gl::drawSphere(position, bacteriaSize);
 	}
 	else {
+		bacHitTexture.enableAndBind();
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		bacteriaSize = bacteriaSize / 1.5;
 
 		//draw split
@@ -65,27 +71,27 @@ void Bacteria::draw(){
 		x = (cos(splitAngle + (rand() % 80))*0.05f) + position.x;
 		y = (sin(splitAngle + (rand() % 80))*0.05f) + position.y;
 		z = position.z + vel / (rand() % 4 + 2);
-		gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
+		gl::drawSphere(Vec3f(x, y, z), bacteriaSize);
 
 		x = (cos(splitAngle + (rand() % 80 + 90.0f))*0.05f) + position.x;
 		y = (sin(splitAngle + (rand() % 80 + 90.0f))*0.05f) + position.y;
 		z = position.z + vel / (rand() % 4 + 2);
-		gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
+		gl::drawSphere(Vec3f(x, y, z), bacteriaSize);
 
 		x = (cos(splitAngle + (rand() % 80 + 180.0f))*0.05f) + position.x;
 		y = (sin(splitAngle + (rand() % 80 + 180.0f))*0.05f) + position.y;
 		z = position.z + vel / (rand() % 4 + 2);
-		gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
+		gl::drawSphere(Vec3f(x, y, z), bacteriaSize);
 
 		x = (cos(splitAngle + (rand() % 80 + 135.0f))*0.025f) + position.x;
 		y = (sin(splitAngle + (rand() % 80 + 135.0f))*0.025f) + position.y;
 		z = position.z + vel / (rand() % 4 + 2);
-		gl::drawSphere(Vec3f(x, y, z), bacteriaSize, 10);
+		gl::drawSphere(Vec3f(x, y, z), bacteriaSize);
 
 		splitAngle += 0.1f;
 	}
 
-	bacTexture.disable();
+	//bacTexture.disable();
 	glDisable(GL_BLEND);
 
 	glDisable(GL_DEPTH_TEST);

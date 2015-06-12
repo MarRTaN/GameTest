@@ -23,6 +23,10 @@ void Stage::setup(){
 	button3Texture = gl::Texture(surfaceButton3);
 	//worldTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
 
+	bubbleTexture = gl::Texture(loadImage(loadAsset("obj/bubble.png")));
+
+	logoTexture = gl::Texture(loadImage(loadAsset("logo.png")));
+
 	//import obj
 	/*ObjLoader loader(loadAsset("obj/Cap.obj"));
 	loader.load(&worldMesh);
@@ -156,13 +160,6 @@ void Stage::drawStage(){
 		//gl::drawSolidCircle(buttonPos, buttonSize);
 		gl::color(1.0f, 1.0f, 1.0f);
 
-		//draw hand
-		gl::color(1.0f, 1.0f, 1.0f);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		gl::draw(handTexture, handIn2D);
-		glDisable(GL_BLEND);
-
 	}
 	//draw stage 1
 	else if (stageNum == 1){
@@ -204,6 +201,55 @@ void Stage::drawStage(){
 		gl::rotate(180.0f);
 		gl::drawCube(Vec3f(0.0f, 0.0f, -5.0f), Vec3f(3.9f,6.0f, 0.01f));
 		stageTexture.disable();
+
+		//draw Big Bubble BG
+		gl::color(ColorAf::white());
+
+		GLfloat light_ambient[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		GLfloat light_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		GLfloat light_specular[] = { 1.2f, 1.2f, 1.2f, 1.0f };
+		GLfloat light_position[] = { 30.0f, 30.0f, 30.0f };
+
+		GLfloat mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
+		GLfloat mat_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+		GLfloat mat_specular[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+		GLfloat high_shininess[] = { 10.0f };
+
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+
+		glEnable(GL_LIGHT0);
+		glEnable(GL_NORMALIZE);
+		glEnable(GL_COLOR_MATERIAL);
+		glEnable(GL_LIGHTING);
+
+		glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+		glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+
+
+		bubbleTexture.enableAndBind();
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		gl::drawSphere(Vec3f(0.0f, -4.0f, -4.5f), 0.3f);
+
+
+		//bubbleTexture.disable();
+		glDisable(GL_BLEND);
+
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHT0);
+		glDisable(GL_NORMALIZE);
+		glDisable(GL_COLOR_MATERIAL);
+		glDisable(GL_LIGHTING);
 
 		gl::popMatrices();
 
@@ -269,17 +315,50 @@ void Stage::drawTime(){
 
 	gl::enableAlphaBlending();
 
+	float textShift;
+	if (score > 99) textShift = 60.0f;
+	else if (score > 9) textShift = 40.0f;
+	else textShift = 20.0f;
+
 	//draw score
-	gl::drawString(std::to_string(score), Vec2f(30.0f, 30.0f), Color(1.0f, 1.0f, 1.0f), ci::Font("Tahoma", 40.0f));
+	gl::drawString(std::to_string(score), Vec2f(getWindowWidth() / 2 - textShift, 70.0f), Color(1.0f, 1.0f, 1.0f), ci::Font("Tahoma", 80.0f));
 
 	//draw time
 	float newTime = 60.0f - (timer / 60.0f);
 	float timeBarWidth = ((getWindowWidth() - 20.0f)*(newTime / 60.0f));
 	if (timeBarWidth < 0.0f) timeBarWidth = 0.0f;
 	gl::color(Color(1.0f, 1.0f, 1.0f));
-	gl::drawSolidRect(Rectf(10.0f, 10.0f, getWindowWidth() - 10.0f, 40.0f));
-	gl::color(Color(0.0f, 0.0f, 1.0f));
-	gl::drawSolidRect(Rectf(10.0f, 10.0f, timeBarWidth + 10.0f, 40.0f));
+	gl::drawSolidRect(Rectf(15.0f, 15.0f, getWindowWidth() - 15.0f, 55.0f));
+	gl::color(Color(0.3f, 0.7f, 1.0f));
+	if (newTime < 15.0f) gl::color(Color(1.0f, 0.3f, 0.3f));
+	else if (newTime < 25.0f) gl::color(Color(0.8f, 0.7f, 0.0f));
+	gl::drawSolidRect(Rectf(20.0f, 20.0f, timeBarWidth - 5.0f, 50.0f));
 
 	gl::disableAlphaBlending();
+}
+
+void Stage::drawLogo(){
+
+	float xx = (getWindowWidth() / 2) - (logoTexture.getWidth()*0.88f / 2);
+	float yy = 250.0f;
+
+	gl::popMatrices();
+	gl::setMatricesWindow(getWindowSize(), true);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	Area srcArea(0, 0, logoTexture.getWidth(), logoTexture.getHeight());
+	Rectf destRect(xx, yy, xx + logoTexture.getWidth()*0.88f, yy + logoTexture.getHeight()*0.88f);
+	gl::draw(logoTexture, srcArea, destRect);
+}
+
+void Stage::drawHand(){
+	Vec2f handIn2D = Vec2f(getWindowWidth()*(getHandPosition().x + 0.5) / 1.0f, -1.0f*getWindowHeight()*(getHandPosition().y - 0.75) / 1.5f);
+
+	//draw hand
+	gl::color(1.0f, 1.0f, 1.0f);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	gl::draw(handTexture, handIn2D);
+	glDisable(GL_BLEND);
 }
