@@ -16,6 +16,12 @@
 #include "cinder/Utilities.h"
 #include "cinder/Capture.h"
 
+#include "cinder/ObjLoader.h"
+#include "cinder/Sphere.h"
+#include "cinder/gl/GlslProg.h"
+#include "cinder/gl/Vbo.h"
+#include "cinder/gl/Texture.h"
+
 using namespace ci; 
 using namespace ci::app;
 using namespace std;
@@ -31,6 +37,14 @@ class Stage{
 		float					worldAngle;
 		ci::CameraPersp			sCamera;
 
+<<<<<<< HEAD
+=======
+		//World
+		TriMesh			worldMesh;
+		gl::VboMesh		worldVBO;
+		gl::GlslProg	worldShader;
+		gl::Texture		worldTexture;
+>>>>>>> 0532a1d505633d4a39fa1954ea407a48be29fd11
 
 		void					setup();
 		void					nextStage();

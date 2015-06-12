@@ -9,6 +9,17 @@ void Stage::setup(){
 
 	ci::Surface8u surfaceHand(loadImage(loadAsset("hand.png")));
 	handTexture = gl::Texture(surfaceHand);
+
+	worldTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
+
+	//import obj
+	/*ObjLoader loader(loadAsset("obj/Cap.obj"));
+	loader.load(&worldMesh);
+	worldVBO = gl::VboMesh(worldMesh);
+
+	worldTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
+	worldShader = gl::GlslProg(loadAsset("obj/shader.vert"), loadAsset("obj/shader.frag"));*/
+
 }
 
 void Stage::nextStage(){
@@ -23,7 +34,11 @@ void Stage::nextStage(){
 		ci::Surface8u surface(loadImage(loadAsset("Stage01-2.PNG")));
 		stageTexture = gl::Texture(surface);
 	}
-	else if (stageNum == 2) score = 0;
+	else if (stageNum == 2) {
+		score = 0;
+		ci::Surface8u surface(loadImage(loadAsset("Stage02.PNG")));
+		stageTexture = gl::Texture(surface);
+	}
 	else if (stageNum > 3) stageNum = 0;
 }
 
@@ -145,24 +160,45 @@ void Stage::drawStage(){
 	}
 	//draw stage 2 :: game
 	else if (stageNum == 2){
-		gl::popMatrices();
-		gl::setMatricesWindow(getWindowSize(), true);
 
 		//draw BG
-		gl::color(Color(0.0f, 1.0f, 0.0f));
-		gl::drawSolidRect(Rectf(0.0f, 0.0f, getWindowWidth(), getWindowHeight()));
+		gl::setMatrices(sCamera);
+		gl::pushMatrices();
+		/*gl::color(1.0f, 1.0f, 1.0f);
+		Area srcArea(0, 0, stageTexture.getWidth(), stageTexture.getHeight());
+		Rectf destRect(0.0f, 0.0f, getWindowWidth(), getWindowHeight());
+		gl::draw(stageTexture, srcArea, destRect);*/
+
+		gl::color(1.0f, 1.0f, 1.0f);
+		stageTexture.enableAndBind();
+		gl::rotate(180.0f);
+		gl::drawCube(Vec3f(0.0f, 0.0f, -5.0f), Vec3f(3.9f,6.0f, 0.01f));
+		stageTexture.disable();
+
+		gl::popMatrices();
 
 		//draw world
-		//stageTexture.bind();
 
 		// Set up 3D view
 		gl::setMatrices(sCamera);
 
-		// Move skeletons down below the rest of the interface
 		gl::pushMatrices();
+		/*worldTexture.bind();
+		worldShader.bind();
+		worldShader.uniform("tex0", 0);
+		gl::draw(worldVBO);
+		worldTexture.unbind();
+		worldShader.unbind();*/
 		
-		gl::color(Color(1.0f, 0.0f, 0.0f));
-		gl::drawSphere(Vec3f(0.0f, 0.0f, -3.0f), 0.05f, 10);
+		/*gl::color(Color(1.0f, 1.0f, 1.0f));
+		worldTexture.enableAndBind();
+		glEnable(GL_TEXTURE_2D);
+		gl::rotate(worldAngle);
+		gl::drawSphere(Vec3f(0.0f, 0.0f, -0.5f), 0.1f, 10);
+		gl::rotate(-worldAngle);
+		worldTexture.disable();
+
+		worldAngle += 0.01;*/
 
 		gl::popMatrices();
 		gl::setMatricesWindow(getWindowSize(), true);
