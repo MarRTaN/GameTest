@@ -83,13 +83,10 @@ class CinderWithKinect01App : public AppBasic
 	float								space = 40.0f;
 	float								change = 2.0f;
 
-<<<<<<< HEAD
 	//Ground
 	Ground								ground;
-=======
 	//time
 	double								passTime;
->>>>>>> cf781aefd47af946a6ddd68adbdde5eca5d162a7
 
 };
 
@@ -150,11 +147,9 @@ void CinderWithKinect01App::setup()
 
 	//bacteria setup
 	bacTexture = gl::Texture(loadImage(loadAsset("obj/bacteria.png")));
-<<<<<<< HEAD
 
 	//ground setup
 	ground.groundSetup();
-=======
 	bacHitTexture = gl::Texture(loadImage(loadAsset("obj/bacteriaHit.png")));
 
 	//bubble setup
@@ -162,7 +157,6 @@ void CinderWithKinect01App::setup()
 
 	//set time
 	passTime = 0;
->>>>>>> cf781aefd47af946a6ddd68adbdde5eca5d162a7
 }
 
 void CinderWithKinect01App::update()
@@ -180,18 +174,11 @@ void CinderWithKinect01App::update()
 		stage.updateStage(player.handRightPos, mCamera);
 
 		//Update bacteria & camera
-<<<<<<< HEAD
-		if (stage.getStage() == 1){
-			console() << "";
-		}
-		else if (stage.getStage() == 2){
-			updateBacteria();
-			ground.updatePosition();
-=======
+			
 		if (stage.getStage() == 2){
 			updateBubble(diffTime);
 			updateBacteria(diffTime);
->>>>>>> cf781aefd47af946a6ddd68adbdde5eca5d162a7
+			ground.updatePosition();
 		}
 		else{
 			mCamera.lookAt(Vec3f(0.0f, 0.0f, 1.0f), Vec3f::zero());
@@ -253,13 +240,9 @@ void CinderWithKinect01App::draw()
 	
 		else if (stage.getStage() == 2) {
 			mCamera.lookAt(player.Pos, Vec3f(player.Pos.x, player.Pos.y, -3.0f));
-<<<<<<< HEAD
-			
 			ground.drawGround(mCamera);
 			player.drawPlayer();
-=======
 			drawBubble();
->>>>>>> cf781aefd47af946a6ddd68adbdde5eca5d162a7
 			drawBacteria();
 			player.drawPlayer();
 			stage.drawTime();

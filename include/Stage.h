@@ -32,16 +32,13 @@ class Stage{
 		gl::Texture				stageTexture;
 		gl::Texture				handTexture;
 		gl::Texture				movieTexture;
-<<<<<<< HEAD
 		gl::Texture				groundTexture;
 		gl::Texture				button0Texture;
 		gl::Texture				button1Texture;
 		gl::Texture				button2Texture;
 		gl::Texture				button3Texture;
-=======
 		gl::Texture				bubbleTexture;
 		gl::Texture				logoTexture;
->>>>>>> cf781aefd47af946a6ddd68adbdde5eca5d162a7
 		qtime::MovieGlRef		mMovie;
 		float					worldAngle;
 		ci::CameraPersp			sCamera;

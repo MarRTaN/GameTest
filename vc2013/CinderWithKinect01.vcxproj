@@ -119,7 +119,6 @@
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\blocks\Cinder-MsKinect-master\src\Kinect.h" />
     <ClInclude Include="..\..\cinder_0.8.6_vc2013\include\cinder\CinderResources.h" />
     <ClInclude Include="..\include\Bacteria.h" />
-
     <ClInclude Include="..\include\Ground.h" />
     <ClInclude Include="..\include\Bubble.h" />
     <ClInclude Include="..\include\Player.h" />

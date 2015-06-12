@@ -28,13 +28,14 @@
     <Filter Include="Source Files\Player">
       <UniqueIdentifier>{2eded4ea-5459-4e2f-93f7-62a03c32c636}</UniqueIdentifier>
     </Filter>
-<<<<<<< HEAD
     <Filter Include="Source Files\Ground">
       <UniqueIdentifier>{b28c328a-0ace-4375-b21d-1f75d8bc7511}</UniqueIdentifier>
-=======
+
     <Filter Include="Source Files\Bubble">
       <UniqueIdentifier>{07781e78-842b-45fc-95e9-7bad44fc3ea7}</UniqueIdentifier>
->>>>>>> cf781aefd47af946a6ddd68adbdde5eca5d162a7
+
+    <Filter Include="Source Files\Bubble">
+      <UniqueIdentifier>{07781e78-842b-45fc-95e9-7bad44fc3ea7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

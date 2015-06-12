@@ -27,6 +27,10 @@ void Stage::setup(){
 
 	logoTexture = gl::Texture(loadImage(loadAsset("logo.png")));
 
+	bubbleTexture = gl::Texture(loadImage(loadAsset("obj/bubble.png")));
+
+	logoTexture = gl::Texture(loadImage(loadAsset("logo.png")));
+
 	//import obj
 	/*ObjLoader loader(loadAsset("obj/Cap.obj"));
 	loader.load(&worldMesh);
@@ -100,7 +104,7 @@ void Stage::updateStage(Vec3f pos, ci::CameraPersp mCamera){
 	//update stage 1
 	else if (stageNum == 1){
 		timer++;
-		if (timer > 2.0f*60.0f) nextStage();
+		if (timer > 8.0f*60.0f) nextStage();
 		if (mMovie)
 			movieTexture = mMovie->getTexture();
 	}
@@ -332,7 +336,7 @@ void Stage::drawTime(){
 	gl::color(Color(0.3f, 0.7f, 1.0f));
 	if (newTime < 15.0f) gl::color(Color(1.0f, 0.3f, 0.3f));
 	else if (newTime < 25.0f) gl::color(Color(0.8f, 0.7f, 0.0f));
-	gl::drawSolidRect(Rectf(20.0f, 20.0f, timeBarWidth - 5.0f, 50.0f));
+	gl::drawSolidRect(Rectf(20.0f, 20.0f, timeBarWidth + 20.0f, 50.0f));
 
 	gl::disableAlphaBlending();
 }
