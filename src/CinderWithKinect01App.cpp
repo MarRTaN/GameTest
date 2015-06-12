@@ -61,6 +61,7 @@ class CinderWithKinect01App : public AppBasic
 
 	//Bacteria
 	vector<Bacteria>					bacterias;
+	gl::Texture							bacTexture;
 
 	//Stage
 	Stage								stage;
@@ -124,6 +125,9 @@ void CinderWithKinect01App::setup()
 
 	//player setup
 	player.setup();
+
+	//bacteria setup
+	bacTexture = gl::Texture(loadImage(loadAsset("football.jpg")));
 }
 
 void CinderWithKinect01App::update()
@@ -182,7 +186,7 @@ void CinderWithKinect01App::draw()
 
 void CinderWithKinect01App::updateBacteria(){
 	if (bacteriaTimeCount > bacteriaBornTime){
-		Bacteria newBac = Bacteria();
+		Bacteria newBac = Bacteria(bacTexture);
 		bacterias.push_back(newBac);
 		bacteriaTimeCount = 0;
 		bacteriaBornTime = rand() % 20 + 30;
@@ -209,17 +213,12 @@ void CinderWithKinect01App::updateBacteria(){
 }
 
 void CinderWithKinect01App::drawBacteria(){
-	// Set up 3D view
-	gl::setMatrices(mCamera);
-
-	// Move skeletons down below the rest of the interface
-	gl::pushMatrices();
-
 	for (int i = 0; i < bacterias.size(); i++){
+		gl::setMatrices(mCamera);
+		gl::pushMatrices();
 		bacterias[i].draw();
+		gl::popMatrices();
 	}
-
-	gl::popMatrices();
 	gl::setMatricesWindow(getWindowSize(), true);
 }
 

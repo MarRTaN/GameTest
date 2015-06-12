@@ -15,6 +15,12 @@
 #include "cinder/Text.h"
 #include "cinder/Utilities.h"
 
+#include "cinder/ObjLoader.h"
+#include "cinder/Sphere.h"
+#include "cinder/gl/GlslProg.h"
+#include "cinder/gl/Vbo.h"
+#include "cinder/gl/Texture.h"
+
 using namespace ci; 
 using namespace ci::app;
 using namespace std;
@@ -29,6 +35,12 @@ class Stage{
 		qtime::MovieGlRef		mMovie;
 		float					worldAngle;
 		ci::CameraPersp			sCamera;
+
+		//World
+		TriMesh			worldMesh;
+		gl::VboMesh		worldVBO;
+		gl::GlslProg	worldShader;
+		gl::Texture		worldTexture;
 
 		void					setup();
 		void					nextStage();
